@@ -80,7 +80,10 @@ def get_tts_response(text: str, output_path: Path):
     # 发送文本进行语音合成，保存输出文件
     headers = {"Content-Type": "application/json"}
     json_data = {"text": text}
+    start = time()
     response = requests.post(DIRECT_TTS_URL, headers=headers, json=json_data)
+    end = time()
+    print(f"语音合成耗时 {end - start:.2f}秒")
     start = time()
     with output_path.open("wb") as f:
         for chunk in response.iter_content(chunk_size=8192):
