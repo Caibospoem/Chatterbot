@@ -1,0 +1,55 @@
+*.opus
+
+__pycache__/
+.venv/
+*.wav
+punc_ct-transformer_zh-cn-common-vocab272727-pytorch/
+speech_fsmn_vad_zh-cn-16k-common-pytorch/
+speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/
+SenseVoiceSmall/
+output.txt
+*.srt
+*.mp4
+output/
+cache/
+
+config/global.toml
+
+
+# converter
+workspace.toml
+*.onnx
+converter/
+realesrgan/
+workspace/
+
+# auto gen config
+config/font.txt
+config/root.toml
+config/todo_data_simplified.json
+# ruff
+.ruff_cache/
+
+# bfg
+bfg-1.15.0.jar
+
+# yutto-uiya
+
+config/yutto.toml
+downloads
+
+# yutto。我希望以 release 的 yutto 作为 deps, 但在开发和调试的时候，有时候会调整 yutto 来适应特性，它不作为 uv.workspace 成员，因为它已经是独立的 uv.workspace.
+packages/yutto
+
+# wexpect
+packages/wexpect-uv
+packages/Folder-Keeper/
+
+# debug
+bug.opus
+asr_response.json
+rec.txt
+sentences_list
+debug/
+tmp.py
+wexpect_log
