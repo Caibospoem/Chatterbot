@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from time import time
 
 import requests
 from dotenv import load_dotenv
+
+from chatbot.tools.config import RunnerSettings, load_settings_file
 
 load_dotenv()
 
@@ -41,6 +44,9 @@ def get_openai_response(
     Returns:
         The generated text (string), or None if an error occurred.
     """
+    settings: RunnerSettings = load_settings_file("config.toml", RunnerSettings)
+    OPENAI_API_KEY: str = settings.sdk_key
+    OPENAI_ENDPOINT: str = settings.sdk_base_url + "/v1/chat/completions"
     headers = {
         "Authorization": f"Bearer {OPENAI_API_KEY}",
         "Content-Type": "application/json",
@@ -66,11 +72,38 @@ def get_openai_response(
     return response_json["choices"][0]["message"]["content"].strip()
 
 
+def get_tts_response(text: str, output_path: Path):
+    settings = load_settings_file("config.toml", RunnerSettings)
+    VITS_URL = settings.vits_url
+    DIRECT_TTS_URL = f"{VITS_URL}/direct"
+    # 发送文本进行语音合成，保存输出文件
+    headers = {"Content-Type": "application/json"}
+    json_data = {"text": text}
+    response = requests.post(DIRECT_TTS_URL, headers=headers, json=json_data)
+    with output_path.open("wb") as f:
+        for chunk in response.iter_content(chunk_size=8192):
+            if chunk:
+                f.write(chunk)
+    print(f"语音已保存到 {output_path}")
+
+
+def get_asr_response(audio_path: Path):
+    settings = load_settings_file("config.toml", RunnerSettings)
+    ASR_URL = settings.asr_url
+    audio_file = {"file": audio_path.open("rb")}
+    response = requests.request("POST", ASR_URL, files=audio_file)
+    return response.json().get("text", "").strip()
+
+
 # --- Example Usage ---
 def main():
-    user_prompt = "请你自我介绍一下"
-    start = time()
-    response = get_openai_response(user_prompt)
-    end = time()
-    print(f"Response time: {end - start:.2f} seconds")
-    print(response)
+    while True:
+        user_prompt = input("请输入:")
+        start = time()
+        response = get_openai_response(user_prompt)
+        print(response)
+        output_path = Path("output.opus")
+        get_tts_response(response, output_path)
+        get_asr_response(output_path)
+        end = time()
+        print(f"响应时间: {end - start:.2f}秒")
