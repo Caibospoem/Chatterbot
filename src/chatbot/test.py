@@ -73,6 +73,7 @@ def get_openai_response(
 
 
 def get_tts_response(text: str, output_path: Path):
+    from time import time
     settings = load_settings_file("config.toml", RunnerSettings)
     VITS_URL = settings.vits_url
     DIRECT_TTS_URL = f"{VITS_URL}/direct"
@@ -80,11 +81,14 @@ def get_tts_response(text: str, output_path: Path):
     headers = {"Content-Type": "application/json"}
     json_data = {"text": text}
     response = requests.post(DIRECT_TTS_URL, headers=headers, json=json_data)
+    start = time()
     with output_path.open("wb") as f:
         for chunk in response.iter_content(chunk_size=8192):
             if chunk:
                 f.write(chunk)
     print(f"语音已保存到 {output_path}")
+    end = time()
+    print(f"写入耗时 {end - start:.2f}秒")
 
 
 def get_asr_response(audio_path: Path):
@@ -101,6 +105,8 @@ def main():
         user_prompt = input("请输入:")
         start = time()
         response = get_openai_response(user_prompt)
+        end = time()
+        print(f"响应时间: {end - start:.2f}秒")
         print(response)
         output_path = Path("output.opus")
         get_tts_response(response, output_path)
