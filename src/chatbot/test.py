@@ -10,7 +10,7 @@ from typing import Any, TypeVar, cast
 import requests
 from dotenv import load_dotenv
 
-from chatbot.console.logger import Logger,Badge
+from chatbot.console.logger import Badge, Logger
 from chatbot.tools.config import RunnerSettings, load_settings_file
 from chatbot.tools.play_audio import play_opus_file
 
@@ -143,9 +143,9 @@ def main():
     while True:
         user_prompt = input("请输入:")
         response = time_get_openai_response(user_prompt)
-        Logger.custom(response,badge=Badge("零壹万物", fore="black", back="cyan"))
+        Logger.custom(response, badge=Badge("零壹万物", fore="black", back="cyan"))
         output_path = Path("output.opus")
         time_get_tts_response(response, output_path)
         tts_response = time_get_asr_response(output_path)
-        Logger.custom(tts_response,badge=Badge("tts", fore="black", back="cyan") )
+        Logger.custom(tts_response, badge=Badge("tts", fore="black", back="cyan"))
         time_play_opus_file(output_path)
