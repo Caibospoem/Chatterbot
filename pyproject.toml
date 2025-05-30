@@ -13,6 +13,7 @@ dependencies = [
     "openai>=1.82.0",
     "httpx[http2,socks]>=0.28.1",
     "dotenv>=0.9.9",
+    "rpi-gpio>=0.7.1",
 ]
 authors = [{ name = "MrXnneHang", email = "XnneHang@gmail.com" }]
 

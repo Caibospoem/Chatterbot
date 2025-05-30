@@ -108,6 +108,7 @@ dependencies = [
     { name = "httpx", extra = ["http2", "socks"] },
     { name = "openai" },
     { name = "pydantic" },
+    { name = "rpi-gpio" },
     { name = "setuptools" },
     { name = "streamlit" },
     { name = "streamlit-antd-components" },
@@ -128,6 +129,7 @@ requires-dist = [
     { name = "httpx", extras = ["http2", "socks"], specifier = ">=0.28.1" },
     { name = "openai", specifier = ">=1.82.0" },
     { name = "pydantic", specifier = ">=2.10.6" },
+    { name = "rpi-gpio", specifier = ">=0.7.1" },
     { name = "setuptools", specifier = "==76.0.0" },
     { name = "streamlit", specifier = "==1.43.2" },
     { name = "streamlit-antd-components", specifier = "==0.3.2" },
@@ -723,6 +725,12 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/41/3a/bc654eb15d3b38f9330fe0f545016ba154d89cdabc6177b0295910cd0ebe/rpds_py-0.25.1-pp311-pypy311_pp73-musllinux_1_2_i686.whl", hash = "sha256:1d1fadd539298e70cac2f2cb36f5b8a65f742b9b9f1014dd4ea1f7785e2470bf", size = 592674, upload-time = "2025-05-21T12:45:44.533Z" },
     { url = "https://files.pythonhosted.org/packages/2e/ba/31239736f29e4dfc7a58a45955c5db852864c306131fd6320aea214d5437/rpds_py-0.25.1-pp311-pypy311_pp73-musllinux_1_2_x86_64.whl", hash = "sha256:9a46c2fb2545e21181445515960006e85d22025bd2fe6db23e76daec6eb689fe", size = 558781, upload-time = "2025-05-21T12:45:46.281Z" },
 ]
+
+[[package]]
+name = "rpi-gpio"
+version = "0.7.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/c4/0f/10b524a12b3445af1c607c27b2f5ed122ef55756e29942900e5c950735f2/RPi.GPIO-0.7.1.tar.gz", hash = "sha256:cd61c4b03c37b62bba4a5acfea9862749c33c618e0295e7e90aa4713fb373b70", size = 29090, upload-time = "2022-02-06T15:15:06.022Z" }
 
 [[package]]
 name = "ruff"
