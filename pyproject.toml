@@ -21,6 +21,7 @@ authors = [{ name = "MrXnneHang", email = "XnneHang@gmail.com" }]
 [project.scripts]
 test = "chatbot.test:main"
 models = "chatbot.list_model:main"
+gpio = "chatbot.test_gpio:main"
 
 [dependency-groups]
 dev = [
