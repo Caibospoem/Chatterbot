@@ -54,12 +54,14 @@ asr_url = "http://localhost/rec-audio"
 
 ```shell
 xnne@xnne-PC:~/code/chatbot$ uv run test
-请输入:你好呀
- INFO  函数 get_openai_response 总用时: 1.4012 秒
- 零壹万物  你好呀，喵~ 有什么可以帮你的吗？喵~
- INFO  函数 get_tts_response 总用时: 2.3476 秒
- INFO  函数 get_asr_response 总用时: 0.7178 秒
- FunASR  你好呀，主人喵，有什么可以帮你的吗？
+请输入:你今年几岁了?
+ INFO  函数 get_openai_response 总用时: 1.9924 秒
+ 零壹万物  喵~作为一个猫娘，我的年龄和人类的不太一样呢，按人类的年龄算的话，我大概18岁哦，喵~
+ INFO  函数 get_tts_response 总用时: 0.9986 秒
+语音已保存到 output.opus
+ INFO  函数 write_tts_response 总用时: 0.0005 秒
+ INFO  函数 get_asr_response 总用时: 0.7436 秒
+ FunASR  喵，作为一个猫娘，我的年龄和人类的不太一样的，按人类的年龄算的话，我大概十八岁哦。喵。
 ffplay version 6.1.1-2deepin0 Copyright (c) 2003-2023 the FFmpeg developers
   built with gcc 12 (Deepin 12.3.0-17deepin6)
   configuration: --prefix=/usr --extra-version=2deepin0 --toolchain=hardened --libdir=/usr/lib/x86_64-linux-gnu --incdir=/usr/include/x86_64-linux-gnu --arch=amd64 --enable-gpl --disable-stripping --enable-gnutls --enable-ladspa --enable-libaom --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcdio --enable-libcodec2 --enable-libdav1d --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libharfbuzz --enable-libfribidi --enable-libglslang --enable-libgme --enable-libgsm --enable-libjack --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-libpulse --enable-librabbitmq --enable-librist --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libsrt --enable-libssh --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzimg --enable-libzmq --enable-libzvbi --enable-lv2 --enable-omx --enable-openal --enable-opencl --enable-opengl --enable-sdl2 --disable-sndio --enable-libjxl --enable-pocketsphinx --enable-librsvg --enable-libvpl --disable-libmfx --enable-libdc1394 --enable-libdrm --enable-libiec61883 --enable-chromaprint --enable-frei0r --enable-libsvtav1 --enable-libx264 --enable-libplacebo --enable-librav1e --enable-shared
@@ -72,13 +74,13 @@ ffplay version 6.1.1-2deepin0 Copyright (c) 2003-2023 the FFmpeg developers
   libswresample   4. 12.100 /  4. 12.100
   libpostproc    57.  3.100 / 57.  3.100
 Input #0, ogg, from 'output.opus': 0KB vq=    0KB sq=    0B f=0/0   
-  Duration: 00:00:03.27, start: 0.000000, bitrate: 74 kb/s
+  Duration: 00:00:07.51, start: 0.000000, bitrate: 76 kb/s
   Stream #0:0: Audio: opus, 48000 Hz, mono, fltp
     Metadata:
       encoder         : Lavc60.31.102 libopus
-   3.18 M-A:  0.000 fd=   0 aq=    0KB vq=    0KB sq=    0B f=0/0   
+   7.43 M-A: -0.000 fd=   0 aq=    0KB vq=    0KB sq=    0B f=0/0   
 音频播放完成。
- INFO  函数 play_opus_file 总用时: 3.5971 秒
+ INFO  函数 play_opus_file 总用时: 8.1667 秒
  ```
 
 `vits_url` 可以部署 [Bert-VITS2.3-Inference](https://github.com/MrXnneHang/Bert-VITS2.3-Inference) , 然后运行 `just server`.
