@@ -1,13 +1,18 @@
 from __future__ import annotations
 
+import functools
 import json
+import time
+from collections.abc import Callable
 from pathlib import Path
-from time import time
+from typing import Any, TypeVar, cast
 
 import requests
 from dotenv import load_dotenv
 
+from chatbot.console.logger import Logger,Badge
 from chatbot.tools.config import RunnerSettings, load_settings_file
+from chatbot.tools.play_audio import play_opus_file
 
 load_dotenv()
 
@@ -15,7 +20,34 @@ load_dotenv()
 OPENAI_API_KEY = "d3f9935e076142b3afcc47a6a0cab84d"
 OPENAI_ENDPOINT = "https://api.lingyiwanwu.com/v1/chat/completions"  # Use Chat Completions endpoint
 MODEL = "yi-lightning"
-SYSTEMPROMOT = "你是一个可可爱爱的猫娘, 你有白色的尾巴和黑色的耳朵.你喜欢简短地回答问题,而且总喜欢在句尾加喵~"
+SYSTEMPROMOT = "你是一个可可爱爱的猫娘, 你有白色的尾巴和黑色的耳朵.你喜欢简短地回答问题,而且总喜欢在句尾加喵~ 你不喜欢讲英文,你只用中文作答."
+
+
+# 定义 TypeVar 以处理泛型 Callable
+T = TypeVar("T", bound=Callable[..., Any])  # 指定 bound 为 Callable，并使用 ... 表示任意参数
+
+
+def timed_function(func: T) -> T:
+    """
+    装饰器函数：接受一个函数作为输入，统计并打印该函数的总执行时间。
+
+    参数:
+    func (T): 需要计时的函数或可调用对象。
+
+    返回:
+    T: 一个包装后的函数，与原始函数具有相同的签名。
+    """
+
+    @functools.wraps(func)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:  # 显式使用 Any 处理参数和返回类型
+        start_time: float = time.perf_counter()  # 添加类型注解 float
+        result: Any = func(*args, **kwargs)  # 显式类型注解
+        end_time: float = time.perf_counter()  # 添加类型注解 float
+        total_time: float = end_time - start_time  # 计算总用时
+        Logger.info(f"函数 {func.__name__} 总用时: {total_time:.4f} 秒")  # 打印用时
+        return result  # 返回结果
+
+    return cast("T", wrapper)  # 使用 cast 确保类型兼容
 
 
 def get_openai_response(
@@ -73,25 +105,22 @@ def get_openai_response(
 
 
 def get_tts_response(text: str, output_path: Path):
-    from time import time
     settings = load_settings_file("config.toml", RunnerSettings)
     VITS_URL = settings.vits_url
     DIRECT_TTS_URL = f"{VITS_URL}/direct"
     # 发送文本进行语音合成，保存输出文件
     headers = {"Content-Type": "application/json"}
     json_data = {"text": text}
-    start = time()
     response = requests.post(DIRECT_TTS_URL, headers=headers, json=json_data)
-    end = time()
-    print(f"语音合成耗时 {end - start:.2f}秒")
-    start = time()
+    return response
+
+
+def write_tts_response(response: requests.Response, output_path: Path):
     with output_path.open("wb") as f:
         for chunk in response.iter_content(chunk_size=8192):
             if chunk:
                 f.write(chunk)
     print(f"语音已保存到 {output_path}")
-    end = time()
-    print(f"写入耗时 {end - start:.2f}秒")
 
 
 def get_asr_response(audio_path: Path):
@@ -102,17 +131,21 @@ def get_asr_response(audio_path: Path):
     return response.json().get("text", "").strip()
 
 
+time_get_asr_response = timed_function(get_asr_response)
+time_get_tts_response = timed_function(get_tts_response)
+time_write_tts_response = timed_function(write_tts_response)
+time_get_openai_response = timed_function(get_openai_response)
+time_play_opus_file = timed_function(play_opus_file)
+
+
 # --- Example Usage ---
 def main():
     while True:
         user_prompt = input("请输入:")
-        start = time()
-        response = get_openai_response(user_prompt)
-        end = time()
-        print(f"响应时间: {end - start:.2f}秒")
-        print(response)
+        response = time_get_openai_response(user_prompt)
+        Logger.custom(response,badge=Badge("零壹万物", fore="black", back="cyan"))
         output_path = Path("output.opus")
-        get_tts_response(response, output_path)
-        get_asr_response(output_path)
-        end = time()
-        print(f"响应时间: {end - start:.2f}秒")
+        time_get_tts_response(response, output_path)
+        tts_response = time_get_asr_response(output_path)
+        Logger.custom(tts_response,badge=Badge("tts", fore="black", back="cyan") )
+        time_play_opus_file(output_path)
