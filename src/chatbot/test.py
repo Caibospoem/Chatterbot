@@ -147,5 +147,5 @@ def main():
         output_path = Path("output.opus")
         time_get_tts_response(response, output_path)
         tts_response = time_get_asr_response(output_path)
-        Logger.custom(tts_response, badge=Badge("tts", fore="black", back="cyan"))
+        Logger.custom(tts_response, badge=Badge("FunASR", fore="black", back="cyan"))
         time_play_opus_file(output_path)
