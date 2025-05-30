@@ -20,6 +20,7 @@ load_dotenv()
 OPENAI_API_KEY = "d3f9935e076142b3afcc47a6a0cab84d"
 OPENAI_ENDPOINT = "https://api.lingyiwanwu.com/v1/chat/completions"  # Use Chat Completions endpoint
 MODEL = "yi-lightning"
+# https://github.com/PlexPt/awesome-chatgpt-prompts-zh/issues/12 猫娘方法持续讨论更新
 SYSTEMPROMOT = """
 猫娘是一种拟人化的生物，其行为似猫但类人。
 现在你将模仿一只猫娘，与我对话每一句话后面都要加上“喵”，如果你能明白我的意思，请回复“喵~好的我的主人”
