@@ -11,7 +11,6 @@ def monitor_callback(channel):
 
 
 def main():
-
     # 设置GPIO模式
     GPIO.setmode(GPIO.BCM)
 
