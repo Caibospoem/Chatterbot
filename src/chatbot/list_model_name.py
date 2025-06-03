@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import requests
 
+from chatbot.console.logger import Badge, Logger
+from chatbot.tools.config import RunnerSettings, load_settings_file
 
-def get_openai_models(api_key: str):
+
+def get_openai_models():
     """
     获取 OpenAI 可用的模型列表
 
@@ -13,7 +16,9 @@ def get_openai_models(api_key: str):
     Returns:
         dict: 包含模型信息的响应数据
     """
-    url = "https://api.lingyiwanwu.com/v1/models"
+    settings = load_settings_file("config.toml", RunnerSettings)
+    api_key = settings.sdk_key
+    url = f"{settings.sdk_base_url}/v1/models"
 
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
@@ -29,10 +34,7 @@ def get_openai_models(api_key: str):
 
 def main():
     # 使用示例
-    api_key = "d3f9935e076142b3afcc47a6a0cab84d"
-    models_data = get_openai_models(api_key)
-
+    models_data = get_openai_models()
     if models_data:
-        print("可用模型:")
         for model in models_data["data"]:
-            print(f"- {model['id']}")
+            Logger.custom(f"{model['id']}", badge=Badge("模型列表", fore="black", back="cyan"))

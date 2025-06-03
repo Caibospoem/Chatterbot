@@ -43,7 +43,7 @@ scoop install uv # windows 参考 scoop.sh 安装 scoop
 curl -LsSf https://astral.sh/uv/install.sh | sh # linux/mac
 ```
 
-克隆仓库： 
+克隆仓库：
 
 ```shell
 https://github.com/MrXnneHang/Chatterbot.git
@@ -53,7 +53,7 @@ cd Chatterbot
 配置文件 `config.toml`:
 
 ```shell
-sdk_base_url = "https://api.lingyiwanwu.com" # base_url, 可以是其他支持 openai 的服务  
+sdk_base_url = "https://api.lingyiwanwu.com" # base_url, 可以是其他支持 openai 的服务
 sdk_key = "ccccf9935e0aaaaaaaaaaaaab84ecd" # sdk_key
 vits_url = "http://localhost:7900/tts"
 asr_url = "http://localhost:8000/rec-audio"
@@ -75,13 +75,13 @@ asr_url = "http://localhost:8000/rec-audio"
 
 正在开发中， 参考[用法文档](./usage.md)。
 
-
 ## RoadMap
 
 - [ ] 支持对话的上下文
-- [x] 支持自动识别录音开始和结束.
-- [ ] 支持流式切分长段落并且为句子.
-- [ ] 以句子为单位进行 mcp 情绪识别, 并且播放对应的 live2d 动画.
+- [ ] 支持自动识别录音开始和结束.
+- [x] 支持流式切分长段落并且为句子.
+- [ ] 以段落为单位进行 mcp 情绪识别, 并且播放对应的 live2d 动画.
+- [ ] 发送 tts 前检查过短句子, 检查特殊符号 `العبارة`
 - [ ] 以句子为单位发送 tts 请求, 并且依次播放音频.
 - [ ] 接入 live2d 模型动画播放
 - [ ] 接入 mcp 情绪识别或者 BERT 情绪识别以及情绪动画播放
@@ -90,13 +90,16 @@ asr_url = "http://localhost:8000/rec-audio"
 
 ## 原则
 
-尽量选择全平台通用的开发方式.
+> [!note]
+> 尽量选择全平台通用的开发方式.
+> coding is for waifus!
+> 可爱是第一驱动力!
 
 ## 引用和借鉴的仓库
 
 [**Bert-VITS-Inference:** 仅保留推理部分的代码, 仅兼容 2.3 的模型, 用 uv 重构的推理模块, 可用 fastapi 调用, 可用 streamlit WebUI](https://github.com/MrXnneHang/Bert-VITS2.3-Inference)
 
-[**XnneHangLab:** 综合性仓库, 支持从 b 站视频下载 -> 字幕识别和编辑(使用funasr), 使用 streamlit WebUI, 可用 fastapi 调用部分功能, 支持 cli](https://github.com/XnneHangLab/XnneHangLab)
+[**XnneHangLab:** 综合性仓库, 支持从 b 站视频下载 -> 字幕识别和编辑(使用 funasr), 使用 streamlit WebUI, 可用 fastapi 调用部分功能, 支持 cli](https://github.com/XnneHangLab/XnneHangLab)
 
 [**zixiiu/Digital_Life_Server**:Yet another voice assistant, but alive. 打算借鉴如何决定开始录音和结束录音.](https://github.com/zixiiu/Digital_Life_Server)
 

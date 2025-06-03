@@ -20,6 +20,7 @@ class RunnerSettings(BaseModel):
     sdk_key: Annotated[str, Field("sdk_key", title="SDK KEY")]
     vits_url: Annotated[str, Field("vits_url", title="VITS URL")]
     asr_url: Annotated[str, Field("asr_url", title="ASR URL")]
+    cache_dir: Annotated[str, Field("cache", title="Cache Directory")]
 
 
 def xdg_config_home() -> Path:

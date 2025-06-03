@@ -15,14 +15,16 @@ dependencies = [
     "dotenv>=0.9.9",
     "rpi-gpio>=0.7.1",
     "aiohttp>=3.12.7",
+    "aiofiles>=24.1.0"
 ]
 authors = [{ name = "MrXnneHang", email = "XnneHang@gmail.com" }]
 
 
 [project.scripts]
-test = "chatbot.test:main"
-models = "chatbot.list_model:main"
-gpio = "chatbot.test_gpio:main"
+test-openai = "chatbot.tests.test_openai:main"
+test-workflow = "chatbot.tests.test_openai_workflow:main" 
+models = "chatbot.list_model_name:main"
+gpio = "chatbot.tests.test_gpio:main"
 
 [dependency-groups]
 dev = [

@@ -7,4 +7,8 @@ if TYPE_CHECKING:
 
 session_keys: StSessionSateKeys = {
     "text_response": "text_response",
+    "sentences": "sentences",
+    "static_que": "static_que",
+    "sentence_que": "sentence_que",
+    "tts_que": "tts_que",
 }
