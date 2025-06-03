@@ -119,8 +119,29 @@ Input #0, ogg, from 'output.opus': 0KB vq=    0KB sq=    0B f=0/0
 > [!note]
 > 你可以利用 frp 和一个远程服务器来实现远程访问, 然后在树莓派部署该服务.(因为虽然树莓派也可以直接运行 FunASR 和 Bert-VITS2 但速度跟乌龟爬一样.)
 
-## 引用的仓库
+
+## RoadMap
+
+- [ ] 支持对话的上下文
+- [ ] 支持自动识别录音开始和结束.
+- [ ] 支持流式切分长段落并且以句子推理.
+- [ ] 接入 live2d 模型动画播放
+- [ ] 接入 mcp 情绪识别或者 BERT 情绪识别以及情绪动画播放
+- [ ] 接入网页端的对话框显示和支持
+- [ ] 优化 api-key 的调用, 用 streamlit 写一个配置文件的界面.
+
+## 引用和借鉴的仓库
 
 [**Bert-VITS-Inference:** 仅保留推理部分的代码, 仅兼容 2.3 的模型, 用 uv 重构的推理模块, 可用 fastapi 调用, 可用 streamlit WebUI](https://github.com/MrXnneHang/Bert-VITS2.3-Inference)
 
 [**XnneHangLab:** 综合性仓库, 支持从 b 站视频下载 -> 字幕识别和编辑(使用funasr), 使用 streamlit WebUI, 可用 fastapi 调用部分功能, 支持 cli](https://github.com/XnneHangLab/XnneHangLab)
+
+[**zixiiu/Digital_Life_Server**:Yet another voice assistant, but alive. 打算借鉴如何决定开始录音和结束录音.](https://github.com/zixiiu/Digital_Life_Server)
+
+[**swordswind/ai_virtual_mate_linux** 使用 flask 在网页端显示动态 Live2D 解决显示问题 special-for-linux](https://github.com/swordswind/ai_virtual_mate_linux)
+
+[**swordswind/ai_virtual_mate_web** 在网页端上显示对话框](https://github.com/swordswind)
+
+[**yutto-dev/yutto** 🧊 一个可爱且任性的 B 站视频下载器 打算借鉴 fastmcp 并且以此判别情绪和播放 live2d 动画](https://github.com/yutto-dev/yutto)
+
+[**Arkueid/live2d-py** 直接使用 pygame 播放, 不兼容 linux, 但 live2d 动画播放和情绪识别值得借鉴. ](https://github.com/Arkueid/live2d-py)
