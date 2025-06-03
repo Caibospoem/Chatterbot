@@ -32,6 +32,8 @@
 
 于是乎这里就把它搞一个简单的聊天机器人. 同时水一下这学期的课设. 采用 ASR -> NLP -> TTS. 分离式的缺点在于我在调用 api 的时候得调用三次, 这样网络延迟就上来了, 目前测试整个流程一般需要 3s, 和网速强相关. 但优点也很明显, 我可以自由组合模型, 来接近各个方面的理想最优,
 
+**本项目所有代码均开源，不过有的在不同仓库。**
+
 ## 本地部署
 
 你需要安装 uv .
@@ -41,74 +43,21 @@ scoop install uv # windows 参考 scoop.sh 安装 scoop
 curl -LsSf https://astral.sh/uv/install.sh | sh # linux/mac
 ```
 
-## 用法
+克隆仓库： 
 
-前提是你具备所有的远程服务, 参考配置文件:
+```shell
+https://github.com/MrXnneHang/Chatterbot.git
+cd Chatterbot
+```
+
+配置文件 `config.toml`:
 
 ```shell
 sdk_base_url = "https://api.lingyiwanwu.com" # base_url, 可以是其他支持 openai 的服务  
 sdk_key = "ccccf9935e0aaaaaaaaaaaaab84ecd" # sdk_key
-vits_url = "http://localhost/tts"
-asr_url = "http://localhost/rec-audio"
+vits_url = "http://localhost:7900/tts"
+asr_url = "http://localhost:8000/rec-audio"
 ```
-
-```shell
-xnne@xnne-PC:~/code/chatbot$ uv run test
-请输入:你好呀
- INFO  函数 get_openai_response 总用时: 1.3542 秒
- 零壹万物  喵~ 主人，你好呀！有什么想和我一起做的吗？
- INFO  函数 get_tts_response 总用时: 0.7548 秒
-语音已保存到 output.opus
- INFO  函数 write_tts_response 总用时: 0.0005 秒
- INFO  函数 get_asr_response 总用时: 0.4490 秒
- FunASR  喵主人，你好呀，有什么想和我一起做的吗？
-ffplay version 6.1.1-2deepin0 Copyright (c) 2003-2023 the FFmpeg developers
-  built with gcc 12 (Deepin 12.3.0-17deepin6)
-  configuration: --prefix=/usr --extra-version=2deepin0 --toolchain=hardened --libdir=/usr/lib/x86_64-linux-gnu --incdir=/usr/include/x86_64-linux-gnu --arch=amd64 --enable-gpl --disable-stripping --enable-gnutls --enable-ladspa --enable-libaom --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcdio --enable-libcodec2 --enable-libdav1d --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libharfbuzz --enable-libfribidi --enable-libglslang --enable-libgme --enable-libgsm --enable-libjack --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-libpulse --enable-librabbitmq --enable-librist --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libsrt --enable-libssh --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzimg --enable-libzmq --enable-libzvbi --enable-lv2 --enable-omx --enable-openal --enable-opencl --enable-opengl --enable-sdl2 --disable-sndio --enable-libjxl --enable-pocketsphinx --enable-librsvg --enable-libvpl --disable-libmfx --enable-libdc1394 --enable-libdrm --enable-libiec61883 --enable-chromaprint --enable-frei0r --enable-libsvtav1 --enable-libx264 --enable-libplacebo --enable-librav1e --enable-shared
-  libavutil      58. 29.100 / 58. 29.100
-  libavcodec     60. 31.102 / 60. 31.102
-  libavformat    60. 16.100 / 60. 16.100
-  libavdevice    60.  3.100 / 60.  3.100
-  libavfilter     9. 12.100 /  9. 12.100
-  libswscale      7.  5.100 /  7.  5.100
-  libswresample   4. 12.100 /  4. 12.100
-  libpostproc    57.  3.100 / 57.  3.100
-Input #0, ogg, from 'output.opus': 0KB vq=    0KB sq=    0B f=0/0   
-  Duration: 00:00:03.61, start: 0.000000, bitrate: 73 kb/s
-  Stream #0:0: Audio: opus, 48000 Hz, mono, fltp
-    Metadata:
-      encoder         : Lavc60.31.102 libopus
-   3.55 M-A: -0.000 fd=   0 aq=    0KB vq=    0KB sq=    0B f=0/0   
-音频播放完成。
- INFO  函数 play_opus_file 总用时: 4.1004 秒
-请输入:你可以帮我写代码吗
- INFO  函数 get_openai_response 总用时: 1.5477 秒
- 零壹万物  我只是一个猫娘，这些事情我不太清楚呢。不过如果你有其他想要我帮忙的事情，我会尽量帮助你的哟！(o´ω`o)
- INFO  函数 get_tts_response 总用时: 0.8661 秒
-语音已保存到 output.opus
- INFO  函数 write_tts_response 总用时: 0.0009 秒
- INFO  函数 get_asr_response 总用时: 0.5688 秒
- FunASR  我只是一个猫娘，这些事情我不太清楚呢。不过如果你有其他想要我帮忙的事情，我会尽量帮助你的哟。
-ffplay version 6.1.1-2deepin0 Copyright (c) 2003-2023 the FFmpeg developers
-  built with gcc 12 (Deepin 12.3.0-17deepin6)
-  configuration: --prefix=/usr --extra-version=2deepin0 --toolchain=hardened --libdir=/usr/lib/x86_64-linux-gnu --incdir=/usr/include/x86_64-linux-gnu --arch=amd64 --enable-gpl --disable-stripping --enable-gnutls --enable-ladspa --enable-libaom --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcdio --enable-libcodec2 --enable-libdav1d --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libharfbuzz --enable-libfribidi --enable-libglslang --enable-libgme --enable-libgsm --enable-libjack --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-libpulse --enable-librabbitmq --enable-librist --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libsrt --enable-libssh --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzimg --enable-libzmq --enable-libzvbi --enable-lv2 --enable-omx --enable-openal --enable-opencl --enable-opengl --enable-sdl2 --disable-sndio --enable-libjxl --enable-pocketsphinx --enable-librsvg --enable-libvpl --disable-libmfx --enable-libdc1394 --enable-libdrm --enable-libiec61883 --enable-chromaprint --enable-frei0r --enable-libsvtav1 --enable-libx264 --enable-libplacebo --enable-librav1e --enable-shared
-  libavutil      58. 29.100 / 58. 29.100
-  libavcodec     60. 31.102 / 60. 31.102
-  libavformat    60. 16.100 / 60. 16.100
-  libavdevice    60.  3.100 / 60.  3.100
-  libavfilter     9. 12.100 /  9. 12.100
-  libswscale      7.  5.100 /  7.  5.100
-  libswresample   4. 12.100 /  4. 12.100
-  libpostproc    57.  3.100 / 57.  3.100
-Input #0, ogg, from 'output.opus': 0KB vq=    0KB sq=    0B f=0/0   
-  Duration: 00:00:08.13, start: 0.000000, bitrate: 74 kb/s
-  Stream #0:0: Audio: opus, 48000 Hz, mono, fltp
-    Metadata:
-      encoder         : Lavc60.31.102 libopus
-   8.05 M-A:  0.000 fd=   0 aq=    0KB vq=    0KB sq=    0B f=0/0   
-音频播放完成。
- INFO  函数 play_opus_file 总用时: 8.4686 秒
- ```
 
 `vits_url` 可以部署 [Bert-VITS2.3-Inference](https://github.com/MrXnneHang/Bert-VITS2.3-Inference) , 然后运行 `just server`.
 
@@ -118,13 +67,22 @@ Input #0, ogg, from 'output.opus': 0KB vq=    0KB sq=    0B f=0/0
 
 > [!note]
 > 你可以利用 frp 和一个远程服务器来实现远程访问, 然后在树莓派部署该服务.(因为虽然树莓派也可以直接运行 FunASR 和 Bert-VITS2 但速度跟乌龟爬一样.)
+> 这样可以直接用 url 调用， 如果国内服务器甚至可以做到 0.1s 以内的延迟。
+
+`base_url` 和 `sdk-key` 请选择支持 OpenAI 协议的服务商, 我用的是零一万物，尽量选择国内的服务商或者代理中转， 因为即使开了代理， 延迟也会远高于国内的服务商， 同事开了代理还会导致你自己搭建的 frp 服务器访问延迟更高。
+
+## 用法
+
+正在开发中， 参考[用法文档](./usage.md)。
 
 
 ## RoadMap
 
 - [ ] 支持对话的上下文
-- [ ] 支持自动识别录音开始和结束.
-- [ ] 支持流式切分长段落并且以句子推理.
+- [x] 支持自动识别录音开始和结束.
+- [ ] 支持流式切分长段落并且为句子.
+- [ ] 以句子为单位进行 mcp 情绪识别, 并且播放对应的 live2d 动画.
+- [ ] 以句子为单位发送 tts 请求, 并且依次播放音频.
 - [ ] 接入 live2d 模型动画播放
 - [ ] 接入 mcp 情绪识别或者 BERT 情绪识别以及情绪动画播放
 - [ ] 接入网页端的对话框显示和支持

@@ -4,6 +4,9 @@ start:
   uv run get_root
   uv run streamlit run src/lab/ui.py --server.port 8051
 
+test-async:
+  uv run src/chatbot/test_async.py
+
 fmt: # 似乎不会检查被 .gitignore 忽略的文件
   uv run ruff check --fix --select I . --exclude packages
   uv run ruff format . --exclude packages
