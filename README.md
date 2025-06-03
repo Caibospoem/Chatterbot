@@ -130,6 +130,10 @@ Input #0, ogg, from 'output.opus': 0KB vq=    0KB sq=    0B f=0/0
 - [ ] 接入网页端的对话框显示和支持
 - [ ] 优化 api-key 的调用, 用 streamlit 写一个配置文件的界面.
 
+## 原则
+
+尽量选择全平台通用的开发方式.
+
 ## 引用和借鉴的仓库
 
 [**Bert-VITS-Inference:** 仅保留推理部分的代码, 仅兼容 2.3 的模型, 用 uv 重构的推理模块, 可用 fastapi 调用, 可用 streamlit WebUI](https://github.com/MrXnneHang/Bert-VITS2.3-Inference)

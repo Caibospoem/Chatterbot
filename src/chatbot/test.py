@@ -4,8 +4,7 @@ import functools
 import json
 import time
 from collections.abc import Callable
-from pathlib import Path
-from typing import Any, TypeVar, cast
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 import requests
 from dotenv import load_dotenv
@@ -13,6 +12,10 @@ from dotenv import load_dotenv
 from chatbot.console.logger import Badge, Logger
 from chatbot.tools.config import RunnerSettings, load_settings_file
 from chatbot.tools.play_audio import play_opus_file
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
 
 load_dotenv()
 
@@ -115,22 +118,10 @@ def get_openai_response(
     stop: list[str] | None = None,
     presence_penalty: float = 0,
     frequency_penalty: float = 0,
+    stream: bool = False,  # 新增参数
 ):
     """
-    Gets a response from the OpenAI API using a direct HTTP request.
-
-    Args:
-        prompt: The prompt to send to the API.
-        model: The OpenAI model to use.
-        max_tokens: The maximum number of tokens to generate.
-        temperature: Controls randomness.
-        n: Number of completions to generate.
-        stop: Stop sequences.
-        presence_penalty: Presence penalty.
-        frequency_penalty: Frequency penalty.
-
-    Returns:
-        The generated text (string), or None if an error occurred.
+    获取OpenAI API的响应，可选择流式返回。
     """
     settings: RunnerSettings = load_settings_file("config.toml", RunnerSettings)
     OPENAI_API_KEY: str = settings.sdk_key
@@ -139,7 +130,6 @@ def get_openai_response(
         "Authorization": f"Bearer {OPENAI_API_KEY}",
         "Content-Type": "application/json",
     }
-
     data = {
         "model": model,
         "messages": [
@@ -152,12 +142,31 @@ def get_openai_response(
         "stop": stop,
         "presence_penalty": presence_penalty,
         "frequency_penalty": frequency_penalty,
+        "stream": stream,  # 加入stream参数
     }
-
-    response = requests.post(OPENAI_ENDPOINT, headers=headers, data=json.dumps(data))
-    response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
-    response_json = response.json()
-    return response_json["choices"][0]["message"]["content"].strip()
+    response = requests.post(OPENAI_ENDPOINT, headers=headers, data=json.dumps(data), stream=stream)
+    response.raise_for_status()
+    if not stream:
+        response_json = response.json()
+        return response_json["choices"][0]["message"]["content"].strip()
+    else:
+        result = ""
+        for line in response.iter_lines():
+            if line:
+                decoded = line.decode("utf-8")
+                print(decoded)
+                if decoded.startswith("data: "):
+                    data_str = decoded[6:]
+                    if data_str.strip() == "[DONE]":
+                        break
+                    try:
+                        chunk = json.loads(data_str)
+                        if "choices" in chunk and chunk["choices"]:
+                            delta = chunk["choices"][0]["delta"].get("content", "")
+                            result += delta
+                    except json.JSONDecodeError:
+                        continue  # 非法json直接跳过
+        return result
 
 
 def get_tts_response(text: str, output_path: Path):
@@ -198,11 +207,11 @@ time_play_opus_file = timed_function(play_opus_file)
 def main():
     while True:
         user_prompt = input("请输入:")
-        response = time_get_openai_response(user_prompt)
+        response = time_get_openai_response(user_prompt, stream=True)
         Logger.custom(response, badge=Badge("零壹万物", fore="black", back="cyan"))
-        output_path = Path("output.opus")
-        response = time_get_tts_response(response, output_path)
-        time_write_tts_response(response, output_path)
-        tts_response = time_get_asr_response(output_path)
-        Logger.custom(tts_response, badge=Badge("FunASR", fore="black", back="cyan"))
-        time_play_opus_file(output_path)
+        # output_path = Path("output.opus")
+        # response = time_get_tts_response(response, output_path)
+        # time_write_tts_response(response, output_path)
+        # tts_response = time_get_asr_response(output_path)
+        # Logger.custom(tts_response, badge=Badge("FunASR", fore="black", back="cyan"))
+        # time_play_opus_file(output_path)

@@ -5,7 +5,7 @@ import time
 import RPi.GPIO as GPIO
 
 
-def monitor_callback(channel):
+def monitor_callback(channel: int):
     # 读取引脚状态并打印
     print(f"Pin {channel} state: {GPIO.input(channel)}")
 
