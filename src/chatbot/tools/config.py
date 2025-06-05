@@ -21,6 +21,7 @@ class RunnerSettings(BaseModel):
     vits_url: Annotated[str, Field("vits_url", title="VITS URL")]
     asr_url: Annotated[str, Field("asr_url", title="ASR URL")]
     cache_dir: Annotated[str, Field("cache", title="Cache Directory")]
+    access_key: Annotated[str, Field("access_key", title="Access Key for Picovoice porcupine")]
 
 
 def xdg_config_home() -> Path:

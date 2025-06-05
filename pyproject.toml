@@ -5,6 +5,11 @@ description = ""
 readme = "README.md"
 requires-python = ">=3.11,<3.12"
 dependencies = [
+    "funasr==1.2.6",
+    "torch==2.2.0",
+    "torchaudio==2.2.0",
+    "numpy==1.26.4",
+    "modelscope>=1.23.1",
     "tomli_w==1.2.0",
     "pydantic>=2.10.6",
     "setuptools==76.0.0",
@@ -15,7 +20,12 @@ dependencies = [
     "dotenv>=0.9.9",
     "rpi-gpio>=0.7.1",
     "aiohttp>=3.12.7",
-    "aiofiles>=24.1.0"
+    "aiofiles>=24.1.0",
+    "websockets>=15.0.1",
+    "sherpa-onnx>=1.12.1",
+    "sounddevice>=0.5.2",
+    "pexpect>=4.9.0",
+    "pvporcupinedemo>=3.0.5",
 ]
 authors = [{ name = "MrXnneHang", email = "XnneHang@gmail.com" }]
 
@@ -23,8 +33,11 @@ authors = [{ name = "MrXnneHang", email = "XnneHang@gmail.com" }]
 [project.scripts]
 test-openai = "chatbot.tests.test_openai:main"
 test-workflow = "chatbot.tests.test_openai_workflow:main" 
+test_spotter = "chatbot.tests.test_spotter_keyword:main"
 models = "chatbot.list_model_name:main"
 gpio = "chatbot.tests.test_gpio:main"
+play_audio = "chatbot.tests.test_play_audio:main"
+wakeup = "chatbot.wakeup:main"
 
 [dependency-groups]
 dev = [
@@ -32,6 +45,26 @@ dev = [
   "ruff>=0.9.3",
   "pytest>=8.3.4",
   "pytest-rerunfailures>=15.0",
+]
+
+[[tool.uv.index]]
+name = "pytorch-cu118"
+url = "https://download.pytorch.org/whl/cu118"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = [
+  { index = "pytorch-cu118", marker = "sys_platform == 'win32'" }, # sys_platform : 'win32' , 'linux' , 'Darwin'
+  { index = "pytorch-cpu", marker = "sys_platform != 'win32'"}
+]
+torchaudio = [
+  { index = "pytorch-cu118", marker = "sys_platform == 'win32'" },
+  { index = "pytorch-cpu", marker = "sys_platform != 'win32'"}
 ]
 
 [tool.pyright]
@@ -43,6 +76,8 @@ reportMissingTypeStubs = false
 [tool.ruff]
 line-length = 120
 target-version = "py311"
+
+
 
 [tool.ruff.lint]
 select = [

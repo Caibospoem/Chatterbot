@@ -125,3 +125,38 @@ async def async_write_tts_response(content: bytes, output_path: Path):
 async def async_play_opus_file(path: Path):
     loop = asyncio.get_event_loop()
     await loop.run_in_executor(None, play_opus_file, path)
+    await asyncio.sleep(0.3)
+
+
+async def async_get_asr_response(audio_path: Path) -> str:
+    """
+    异步发送音频文件到ASR服务并获取识别结果。
+
+    参数:
+        audio_path (Path): 音频文件路径
+
+    返回:
+        str: ASR识别的文本结果，如果出错或无结果则返回空字符串
+    """
+    settings = load_settings_file("config.toml", RunnerSettings)  # 假设此函数是同步的
+    ASR_URL = settings.asr_url
+
+    # 创建异步HTTP会话
+    async with aiohttp.ClientSession() as session:
+        # 准备文件数据
+        with audio_path.open("rb") as audio_file:
+            form_data = aiohttp.FormData()
+            form_data.add_field("file", audio_file, filename=audio_path.name)
+
+            try:
+                # 发送异步POST请求
+                async with session.post(ASR_URL, data=form_data) as response:
+                    response.raise_for_status()  # 检查HTTP状态码
+                    result = await response.json()  # 异步读取JSON响应
+                    return result.get("text", "").strip()
+            except aiohttp.ClientError as e:
+                print(f"ASR请求错误：{e}")
+                return ""
+            except Exception as e:
+                print(f"处理ASR响应时出错：{e}")
+                return ""

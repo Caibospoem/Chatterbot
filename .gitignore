@@ -1,5 +1,6 @@
 *.opus
 key
+models
 
 __pycache__/
 .venv/

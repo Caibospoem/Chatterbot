@@ -58,8 +58,11 @@ def main():
         time_label = get_time_tag_with_millis()
         output_path = cache_dir / f"{time_label}.opus"
         st.session_state[session_keys["static_que"]].append(output_path)
-        time_write_tts_response(response, st.session_state[session_keys["static_que"]].popleft())
-        time_play_opus_file(output_path)
+
+        output_path = st.session_state[session_keys["static_que"]].popleft()  # 获取输出路径
+        time_write_tts_response(response, output_path)
+        # time_play_opus_file(output_path)
+        time_get_asr_response(output_path)  # 模拟获取ASR响应
 
 
 # 在非异步环境下实际上加上 queue 也没啥用, 但为了保持一致性和相同逻辑, 在这里加上.
