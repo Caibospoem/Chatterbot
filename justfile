@@ -4,6 +4,9 @@ start:
   uv run get_root
   uv run streamlit run src/lab/ui.py --server.port 8051
 
+server:
+  uv run uvicorn src.chatbot.live2d:app --reload --host localhost --port 7900
+
 test-openai:
   uv run src/chatbot/tests/test_async_openai.py
 

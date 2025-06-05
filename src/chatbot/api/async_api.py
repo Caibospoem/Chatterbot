@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 from chatbot._dictionary import session_keys
 from chatbot.console.logger import Logger
 from chatbot.tools.config import RunnerSettings, load_settings_file
-from chatbot.tools.play_audio import play_opus_file
+from chatbot.tools.play_audio import file_to_wav, play_opus_file
 
 load_dotenv()
 
@@ -126,6 +126,7 @@ async def async_play_opus_file(path: Path):
     loop = asyncio.get_event_loop()
     await loop.run_in_executor(None, play_opus_file, path)
     await asyncio.sleep(0.3)
+    path.unlink(missing_ok=True)  # 删除文件，避免缓存过多
 
 
 async def async_get_asr_response(audio_path: Path) -> str:
@@ -160,3 +161,8 @@ async def async_get_asr_response(audio_path: Path) -> str:
             except Exception as e:
                 print(f"处理ASR响应时出错：{e}")
                 return ""
+
+
+async def async_file_to_wav(input_path: Path, output_path: Path):
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, file_to_wav, input_path, output_path)

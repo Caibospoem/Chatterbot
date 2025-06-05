@@ -1,4 +1,5 @@
 *.opus
+*.wav
 key
 models
 
@@ -13,7 +14,6 @@ output.txt
 *.srt
 *.mp4
 output/
-cache/
 
 config/global.toml
 
