@@ -19,8 +19,8 @@ recorder:
 asr:
   uv run src/chatbot/realtime_asr.py --host "realasr.xnnehang.top" --port 28080 --audio_in /home/xnne/code/chatbot/cache/asr/temp_wav_11-17-32-471.wav
 
-phone:
-  uv run src/chatbot/tests/test_phone_spotter.py
+vad:
+  uv run src/chatbot/vad.py
 
 fmt: # 似乎不会检查被 .gitignore 忽略的文件
   uv run ruff check --fix --select I . --exclude packages

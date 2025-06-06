@@ -14,8 +14,8 @@ from chatbot.api.sync_api import (
     write_tts_response,
 )
 from chatbot.console.logger import Badge, Logger, set_logger_debug
+from chatbot.tools.audio import play_opus_file
 from chatbot.tools.config import RunnerSettings, load_settings_file
-from chatbot.tools.play_audio import play_opus_file
 from chatbot.tools.timed_helper import get_time_tag_with_millis, timed_function
 
 streamlit_loggers = [

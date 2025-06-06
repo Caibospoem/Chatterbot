@@ -4,7 +4,7 @@ import argparse
 from pathlib import Path
 
 from chatbot.console.logger import Logger
-from chatbot.tools.play_audio import play_opus_file
+from chatbot.tools.audio import play_opus_file
 
 
 def main():
