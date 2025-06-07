@@ -140,3 +140,96 @@ DEBUG  语音已保存到 cache/17-47-58-349.opus
 异步的工作流相当于在和抢时间, 抢在播放音频的时候发送 tts_gen 的请求, 这样大概可以节省一些时间,同时把原本线性的时间增长变成只需要考虑首句时间生成的时间.
 
 在一句话两句话的表现中,大概节省 1-2s,在短段落中大概可以节省 3-4s,对于长文,可以节省>10s, 取决于回复有多长,越长,节省时间越多.
+
+## 和派蒙对话.
+
+```shell
+zsh: command not found: 你好
+chatbot➜  chatbot git:(wakeup-part3) ✗ just recorder
+uv run src/chatbot/recorder.py
+2025-06-07 15:45:08.286 WARNING streamlit.runtime.scriptrunner_utils.script_run_context: Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2025-06-07 15:45:08.287 WARNING streamlit.runtime.state.session_state_proxy: Session state does not function when running a script without `streamlit run`
+2025-06-07 15:45:08.287 WARNING streamlit.runtime.scriptrunner_utils.script_run_context: Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2025-06-07 15:45:08.287 WARNING streamlit.runtime.scriptrunner_utils.script_run_context: Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+ INFO  唤醒词检测初始化成功
+ INFO  开始监听唤醒词...
+ INFO  检测到唤醒词：你好
+ INFO  开始录音...
+ INFO  等待 3.0 秒后开始VAD处理...
+ INFO  添加片段 0 到处理队列 (长度: 24099 样本)
+ INFO  已保存WAV文件: cache/asr/segment_0_15-45-12-842.wav
+ INFO  添加片段 1 到处理队列 (长度: 24048 样本)
+ INFO  VAD结果: {'key': 'segment_0_15-45-12-842', 'processing_time': 0.36464571952819824, 'timestamp': [], 'audio_length': 1506}
+ INFO  VAD结果: 片段 0 没有检测到语音活动
+ INFO  静音时长: 1506ms (阈值: 1000ms)
+ INFO  检测到长时间静音 (1506ms)，停止录音
+ INFO  片段处理任务结束
+ INFO  停止录音...
+ INFO  完整录音时长: 4.13 秒
+ INFO  已保存WAV文件: cache/asr/full_audio_15-45-14-062.wav
+ INFO  发送完整音频文件到ASR服务: cache/asr/full_audio_15-45-14-062.wav
+ INFO  ASR识别结果: 你今年几岁了？
+ DEBUG  首句耗时: 1.404 秒
+ DEBUG  语音已保存到 cache/tts/15-45-17-530.opus
+ 零壹万物  哼，想打听我的年龄？
+ DEBUG  openai 总耗时: 2.514 秒
+ DEBUG  语音已保存到 cache/tts/15-45-18-588.opus
+ DEBUG  语音已保存到 cache/tts/15-45-19-801.opus
+ 零壹万物  没门！
+ DEBUG  语音已保存到 cache/tts/15-45-21-179.opus
+ DEBUG  语音已保存到 cache/tts/15-45-22-141.opus
+ 零壹万物  不过呢，我可以告诉你，我陪伴旅行者已经很久了，久到我自己都快记不清了！
+ 零壹万物  你就当我是永远年轻的小派蒙就好了！
+ 零壹万物  哎呀，别想着给我起什么奇怪的绰号哦！
+ INFO  录音已完成，重新进入唤醒词监听状态
+ INFO  唤醒词检测初始化成功
+ INFO  开始监听唤醒词...
+ INFO  检测到唤醒词：你好
+ INFO  开始录音...
+ INFO  等待 3.0 秒后开始VAD处理...
+ INFO  添加片段 0 到处理队列 (长度: 24083 样本)
+ INFO  已保存WAV文件: cache/asr/segment_0_15-45-43-402.wav
+ INFO  添加片段 1 到处理队列 (长度: 24080 样本)
+ INFO  VAD结果: {'key': 'segment_0_15-45-43-402', 'processing_time': 0.3281395435333252, 'timestamp': [[370, 1490]], 'audio_length': 1505}
+ INFO  VAD结果: 片段 0, 音频长度 1505ms, 最后语音活动 1490ms
+ INFO  静音时长: 15ms (阈值: 1000ms)
+ INFO  已保存WAV文件: cache/asr/segment_1_15-45-44-249.wav
+ INFO  添加片段 2 到处理队列 (长度: 24112 样本)
+ INFO  VAD结果: {'key': 'segment_1_15-45-44-249', 'processing_time': 0.4202127456665039, 'timestamp': [[0, 1490]], 'audio_length': 1505}
+ INFO  VAD结果: 片段 1, 音频长度 1505ms, 最后语音活动 1490ms
+ INFO  静音时长: 15ms (阈值: 1000ms)
+ INFO  已保存WAV文件: cache/asr/segment_2_15-45-45-053.wav
+ INFO  VAD结果: {'key': 'segment_2_15-45-45-053', 'processing_time': 0.2384960651397705, 'timestamp': [], 'audio_length': 1507}
+ INFO  VAD结果: 片段 2 没有检测到语音活动
+ INFO  静音时长: 1507ms (阈值: 1000ms)
+ INFO  检测到长时间静音 (1507ms)，停止录音
+ INFO  片段处理任务结束
+ INFO  停止录音...
+ INFO  完整录音时长: 5.36 秒
+ INFO  已保存WAV文件: cache/asr/full_audio_15-45-45-827.wav
+ INFO  发送完整音频文件到ASR服务: cache/asr/full_audio_15-45-45-827.wav
+ INFO  ASR识别结果: 请问你是不是应急食品？
+ DEBUG  首句耗时: 1.379 秒
+ DEBUG  openai 总耗时: 2.559 秒
+ DEBUG  语音已保存到 cache/tts/15-45-49-601.opus
+ 零壹万物  呜啊，好生气！
+ DEBUG  语音已保存到 cache/tts/15-45-50-642.opus
+ DEBUG  语音已保存到 cache/tts/15-45-51-687.opus
+ 零壹万物  你居然敢这么说！
+ DEBUG  语音已保存到 cache/tts/15-45-52-722.opus
+ DEBUG  语音已保存到 cache/tts/15-45-53-802.opus
+ 零壹万物  我决定给你起一个难听的绰号，就叫“小饿鬼”吧！
+ DEBUG  语音已保存到 cache/tts/15-45-54-883.opus
+ DEBUG  语音已保存到 cache/tts/15-45-55-781.opus
+ 零壹万物  我才不是应急食品呢！
+ 零壹万物  你是不是想饿肚子的时候拿我充饥啊？
+ 零壹万物  ！
+ 零壹万物  哼，想都别想！
+ INFO  录音已完成，重新进入唤醒词监听状态
+ INFO  唤醒词检测初始化成功
+ INFO  开始监听唤醒词...
+```
+
+当然你可以自定义提示词, 修改 prompts/paimon.txt 即可.
+
+tts 模型取决于 Bert-VITS2-Inference 所运行的模型.
