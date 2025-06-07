@@ -21,5 +21,5 @@ class VadResponse(TypedDict):
     """
 
     key: str
-    time_stamp: list[list[int]]
+    timestamp: list[list[int]]
     audio_length: int

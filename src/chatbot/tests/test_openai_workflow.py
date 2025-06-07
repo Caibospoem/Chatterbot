@@ -13,9 +13,9 @@ from chatbot.api.sync_api import (
     get_tts_response,
     write_tts_response,
 )
+from chatbot.config_manager.config import ServiceSettings, load_settings_file
 from chatbot.console.logger import Badge, Logger, set_logger_debug
 from chatbot.tools.audio import play_opus_file
-from chatbot.tools.config import RunnerSettings, load_settings_file
 from chatbot.tools.timed_helper import get_time_tag_with_millis, timed_function
 
 streamlit_loggers = [
@@ -40,7 +40,7 @@ time_play_opus_file = timed_function(play_opus_file)
 
 
 def main():
-    settings = load_settings_file("config.toml", RunnerSettings)
+    settings = load_settings_file("config.toml", ServiceSettings)
     cache_dir = Path(settings.cache_dir)
     if not cache_dir.exists():
         cache_dir.mkdir(parents=True, exist_ok=True)

@@ -5,6 +5,7 @@ import json
 import re
 import time
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import aiofiles
 import aiohttp
@@ -12,9 +13,13 @@ import streamlit as st
 from dotenv import load_dotenv
 
 from chatbot._dictionary import session_keys
+from chatbot.config_manager.config import ServiceSettings, load_settings_file
 from chatbot.console.logger import Logger
 from chatbot.tools.audio import file_to_wav, play_opus_file
-from chatbot.tools.config import RunnerSettings, load_settings_file
+
+if TYPE_CHECKING:
+    from chatbot._typing import VadResponse
+
 
 load_dotenv()
 
@@ -22,7 +27,7 @@ if session_keys["text_response"] not in st.session_state:
     st.session_state[session_keys["text_response"]] = ""  # 初始化会话状态
 
 # --- Configuration ---
-settings = load_settings_file("config.toml", RunnerSettings)
+settings = load_settings_file("config.toml", ServiceSettings)
 OPENAI_API_KEY = settings.sdk_key
 OPENAI_ENDPOINT = f"{settings.sdk_base_url}/v1/chat/completions"  # Use Chat Completions endpoint
 MODEL = "yi-lightning"
@@ -42,7 +47,7 @@ async def get_openai_response_stream(
     """
     获取OpenAI API的响应（流式，异步）
     """
-    settings: RunnerSettings = load_settings_file("config.toml", RunnerSettings)
+    settings: ServiceSettings = load_settings_file("config.toml", ServiceSettings)
     OPENAI_API_KEY: str = settings.sdk_key
     OPENAI_ENDPOINT: str = settings.sdk_base_url + "/v1/chat/completions"
     headers = {
@@ -104,9 +109,8 @@ async def get_openai_response_stream(
 
 
 async def async_get_tts_response(text: str):
-    settings = load_settings_file("config.toml", RunnerSettings)
-    VITS_URL = settings.vits_url
-    DIRECT_TTS_URL = f"{VITS_URL}/direct"
+    settings = load_settings_file("config.toml", ServiceSettings)
+    DIRECT_TTS_URL = settings.vits_direct_url
     headers = {"Content-Type": "application/json"}
     json_data = {"text": text}
     async with aiohttp.ClientSession() as session:
@@ -125,7 +129,7 @@ async def async_write_tts_response(content: bytes, output_path: Path):
 async def async_play_opus_file(path: Path):
     loop = asyncio.get_event_loop()
     await loop.run_in_executor(None, play_opus_file, path)
-    await asyncio.sleep(0.3)
+    await asyncio.sleep(0.3)  # 每个音频播放可以有点间隔
     path.unlink(missing_ok=True)  # 删除文件，避免缓存过多
 
 
@@ -139,8 +143,10 @@ async def async_get_asr_response(audio_path: Path) -> str:
     返回:
         str: ASR识别的文本结果，如果出错或无结果则返回空字符串
     """
-    settings = load_settings_file("config.toml", RunnerSettings)  # 假设此函数是同步的
+    settings = load_settings_file("config.toml", ServiceSettings)  # 假设此函数是同步的
     ASR_URL = settings.asr_url
+    if not audio_path.exists():
+        raise FileNotFoundError(f"Audio file {audio_path} does not exist.")
 
     # 创建异步HTTP会话
     async with aiohttp.ClientSession() as session:
@@ -149,18 +155,40 @@ async def async_get_asr_response(audio_path: Path) -> str:
             form_data = aiohttp.FormData()
             form_data.add_field("file", audio_file, filename=audio_path.name)
 
-            try:
-                # 发送异步POST请求
-                async with session.post(ASR_URL, data=form_data) as response:
-                    response.raise_for_status()  # 检查HTTP状态码
-                    result = await response.json()  # 异步读取JSON响应
-                    return result.get("text", "").strip()
-            except aiohttp.ClientError as e:
-                print(f"ASR请求错误：{e}")
-                return ""
-            except Exception as e:
-                print(f"处理ASR响应时出错：{e}")
-                return ""
+            # 发送异步POST请求
+            async with session.post(ASR_URL, data=form_data) as response:
+                response.raise_for_status()  # 检查HTTP状态码
+                result = await response.json()  # 异步读取JSON响应
+                await asyncio.sleep(0.1)  # 加点停顿
+                return result.get("text", "").strip()
+
+
+async def async_get_vad_response(audio_path: Path) -> VadResponse:
+    """
+    异步发送音频文件到VAD服务并获取识别结果。
+
+    参数:
+        audio_path (Path): 音频文件路径
+
+    返回:
+        VadResponse
+    """
+    settings = load_settings_file("config.toml", ServiceSettings)  # 假设此函数是同步的
+    VAD_URL = settings.vad_url
+    if not audio_path.exists():
+        raise FileNotFoundError(f"Audio file {audio_path} does not exist.")
+    # 创建异步HTTP会话
+    async with aiohttp.ClientSession() as session:
+        # 准备文件数据
+        with audio_path.open("rb") as audio_file:
+            form_data = aiohttp.FormData()
+            form_data.add_field("file", audio_file, filename=audio_path.name)
+
+            async with session.post(VAD_URL, data=form_data) as response:
+                response.raise_for_status()  # 检查HTTP状态码
+                result: VadResponse = await response.json()  # 异步读取JSON响应
+                await asyncio.sleep(0.1)  # 加点停顿, 不加似乎会卡 vad. 像是文件损坏了
+                return result
 
 
 async def async_file_to_wav(input_path: Path, output_path: Path):

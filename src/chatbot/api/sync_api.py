@@ -2,14 +2,18 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import requests
 import streamlit as st
 from dotenv import load_dotenv
 
 from chatbot._dictionary import session_keys
+from chatbot.config_manager.config import ServiceSettings, load_settings_file
 from chatbot.console.logger import Logger
-from chatbot.tools.config import RunnerSettings, load_settings_file
+
+if TYPE_CHECKING:
+    from chatbot._typing import VadResponse
 
 load_dotenv()
 
@@ -17,7 +21,7 @@ if session_keys["text_response"] not in st.session_state:
     st.session_state[session_keys["text_response"]] = ""  # 初始化会话状态
 
 # --- Configuration ---
-settings = load_settings_file("config.toml", RunnerSettings)
+settings = load_settings_file("config.toml", ServiceSettings)
 OPENAI_API_KEY = settings.sdk_key
 OPENAI_ENDPOINT = f"{settings.sdk_base_url}/v1/chat/completions"  # Use Chat Completions endpoint
 MODEL = "yi-lightning"
@@ -37,7 +41,7 @@ def get_openai_response(
     """
     获取OpenAI API的响应（同步，非流式）
     """
-    settings: RunnerSettings = load_settings_file("config.toml", RunnerSettings)
+    settings: ServiceSettings = load_settings_file("config.toml", ServiceSettings)
     OPENAI_API_KEY: str = settings.sdk_key
     OPENAI_ENDPOINT: str = settings.sdk_base_url + "/v1/chat/completions"
     headers = {
@@ -66,13 +70,12 @@ def get_openai_response(
 
 
 def get_tts_response(text: str):
-    settings = load_settings_file("config.toml", RunnerSettings)
-    VITS_URL = settings.vits_url
-    DIRECT_TTS_URL = f"{VITS_URL}/direct"
+    settings = load_settings_file("config.toml", ServiceSettings)
+    SPLIT_TTS_URL = settings.vits_split_url  # 对于长句应该使用切分合成, 避免爆显存而使用内存导致计算缓慢
     # 发送文本进行语音合成，保存输出文件
     headers = {"Content-Type": "application/json"}
     json_data = {"text": text}
-    response = requests.post(DIRECT_TTS_URL, headers=headers, json=json_data)
+    response = requests.post(SPLIT_TTS_URL, headers=headers, json=json_data)
     return response
 
 
@@ -85,8 +88,27 @@ def write_tts_response(response: requests.Response, output_path: Path):
 
 
 def get_asr_response(audio_path: Path):
-    settings = load_settings_file("config.toml", RunnerSettings)
+    settings = load_settings_file("config.toml", ServiceSettings)
+    if not audio_path.exists():
+        raise FileNotFoundError(f"Audio file {audio_path} does not exist.")
     ASR_URL = settings.asr_url
     audio_file = {"file": audio_path.open("rb")}
     response = requests.request("POST", ASR_URL, files=audio_file)
     return response.json().get("text", "").strip()
+
+
+def get_vad_response(input_path: Path):
+    settings = load_settings_file("config.toml", ServiceSettings)
+    if not input_path.exists():
+        raise FileNotFoundError(f"Input file {input_path} does not exist.")
+    VAD_URL = settings.vad_url
+    audio_file = {"file": input_path.open("rb")}
+    res = requests.request("POST", VAD_URL, files=audio_file).json()
+    if not isinstance(res, dict):
+        raise ValueError(f"Invalid VAD response: {res}")
+    response: VadResponse = {
+        "audio_length": res["audio_length"],
+        "timestamp": res["timestamp"],
+        "key": res["key"],
+    }
+    return response

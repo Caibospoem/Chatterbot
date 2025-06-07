@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import requests
 
+from chatbot.config_manager.config import ServiceSettings, load_settings_file
 from chatbot.console.logger import Badge, Logger
-from chatbot.tools.config import RunnerSettings, load_settings_file
 
 
 def get_openai_models():
@@ -16,7 +16,7 @@ def get_openai_models():
     Returns:
         dict: 包含模型信息的响应数据
     """
-    settings = load_settings_file("config.toml", RunnerSettings)
+    settings = load_settings_file("config.toml", ServiceSettings)
     api_key = settings.sdk_key
     url = f"{settings.sdk_base_url}/v1/models"
 

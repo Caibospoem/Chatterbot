@@ -3,11 +3,11 @@ from __future__ import annotations
 import pvporcupine
 from pvrecorder import PvRecorder
 
-from chatbot.tools.config import RunnerSettings, load_settings_file
+from chatbot.config_manager.config import ServiceSettings, load_settings_file
 
 
 def main():
-    settings = load_settings_file("config.toml", RunnerSettings)
+    settings = load_settings_file("config.toml", ServiceSettings)
     access_key = settings.access_key
     keyword_paths = ["./models/keywords_spotting/派蒙派蒙_zh_linux_v3_0_0.ppn"]
     keywords = ["派蒙派蒙"]

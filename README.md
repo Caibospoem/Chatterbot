@@ -53,15 +53,19 @@ cd Chatterbot
 配置文件 `config.toml`:
 
 ```shell
-sdk_base_url = "https://api.lingyiwanwu.com" # base_url, 可以是其他支持 openai 的服务
-sdk_key = "ccccf9935e0aaaaaaaaaaaaab84ecd" # sdk_key
-vits_url = "http://localhost:7900/tts"
+sdk_base_url = "sdk_base_url"
+sdk_key = "sdk_key"
+vits_split_url = "http://localhost:7900/tts/split"
+vits_direct_url = "http://localhost:7900/tts/direct"
 asr_url = "http://localhost:8000/rec-audio"
+vad_url = "http://localhost:8000/vad-audio"
+cache_dir = "cache"
+access_key = "access_key"
 ```
 
 `vits_url` 可以部署 [Bert-VITS2.3-Inference](https://github.com/MrXnneHang/Bert-VITS2.3-Inference) , 然后运行 `just server`.
 
-`asr_url` 可以部署 [XnneHangLab](https://github.com/XnneHangLab/XnneHangLab) , 然后运行 `just server`,
+`asr_url` 和 `vad_url` 可以部署 [XnneHangLab](https://github.com/XnneHangLab/XnneHangLab) , 然后运行 `just server`,
 
 有问题可以提 issue.
 

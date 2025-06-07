@@ -13,6 +13,9 @@ test-openai:
 test-workflow:
   uv run src/chatbot/tests/test_async_openai_workflow.py
 
+test-vad:
+  uv run src/chatbot/tests/test_async_vad.py
+
 recorder:
   uv run src/chatbot/recorder.py
 

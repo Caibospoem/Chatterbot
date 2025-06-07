@@ -15,11 +15,13 @@ toml_loads = tomllib.loads
 toml_dumps = tomlw.dumps  # 使用 tomlw.dumps
 
 
-class RunnerSettings(BaseModel):
+class ServiceSettings(BaseModel):
     sdk_base_url: Annotated[str, Field("sdk_base_url", title="SDK Base URL")]
     sdk_key: Annotated[str, Field("sdk_key", title="SDK KEY")]
-    vits_url: Annotated[str, Field("vits_url", title="VITS URL")]
-    asr_url: Annotated[str, Field("asr_url", title="ASR URL")]
+    vits_split_url: Annotated[str, Field("http://localhost:7900/tts/split", title="VITS Split URL")]  # 切分生成
+    vits_direct_url: Annotated[str, Field("http://localhost:7900/tts/direct", title="VITS URL")]  # 直接生成
+    asr_url: Annotated[str, Field("http://localhost:8000/rec-audio", title="ASR URL")]
+    vad_url: Annotated[str, Field("http://localhost:8000/vad-audio", title="ASR URL")]
     cache_dir: Annotated[str, Field("cache", title="Cache Directory")]
     access_key: Annotated[str, Field("access_key", title="Access Key for Picovoice porcupine")]
 
@@ -45,8 +47,8 @@ def search_for_settings_file(setting_name: str) -> Path | None:
 
 def load_settings_file(
     setting_name: str,
-    setting: (type[RunnerSettings]),
-) -> RunnerSettings:
+    setting: (type[ServiceSettings]),
+) -> ServiceSettings:
     """加载配置文件，如果不存在则创建默认配置文件在当前工作目录。"""
     settings_file = search_for_settings_file(setting_name=setting_name)
     if settings_file is None:
@@ -65,7 +67,7 @@ def load_settings_file(
 
 def write_settings_file(
     settings_name: str,
-    settings: RunnerSettings,
+    settings: ServiceSettings,
 ) -> None:
     """将 Setting 对象写入 TOML 文件。"""
     settings_file = search_for_settings_file(setting_name=settings_name)

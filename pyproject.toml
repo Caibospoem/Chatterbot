@@ -5,11 +5,7 @@ description = ""
 readme = "README.md"
 requires-python = ">=3.11,<3.12"
 dependencies = [
-    "funasr==1.2.6",
-    "torch==2.2.0",
-    "torchaudio==2.2.0",
     "numpy==1.26.4",
-    "modelscope>=1.23.1",
     "tomli_w==1.2.0",
     "pydantic>=2.10.6",
     "setuptools==76.0.0",
@@ -28,6 +24,7 @@ dependencies = [
     "pvporcupinedemo>=3.0.5",
     "fastapi>=0.115.12",
     "uvicorn>=0.34.3",
+    "soundfile>=0.13.1",
 ]
 authors = [{ name = "MrXnneHang", email = "XnneHang@gmail.com" }]
 
