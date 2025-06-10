@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import requests
 
-from chatbot.config_manager.config import ServiceSettings, load_settings_file
+from chatbot.config_manager import ServiceSettings, load_settings_file
 from chatbot.console.logger import Badge, Logger
 
 

@@ -13,7 +13,7 @@ from chatbot.api.sync_api import (
     get_tts_response,
     write_tts_response,
 )
-from chatbot.config_manager.config import ServiceSettings, load_settings_file
+from chatbot.config_manager import ServiceSettings, load_settings_file
 from chatbot.console.logger import Badge, Logger, set_logger_debug
 from chatbot.tools.audio import play_opus_file
 from chatbot.tools.timed_helper import get_time_tag_with_millis, timed_function

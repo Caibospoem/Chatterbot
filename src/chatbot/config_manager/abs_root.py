@@ -5,7 +5,7 @@ from typing import Annotated
 
 from pydantic import BaseModel, Field
 
-from chatbot.config_manager.config import load_settings_file, write_settings_file
+from chatbot.config_manager import load_settings_file, write_settings_file
 
 
 class RootAbsDir(BaseModel):

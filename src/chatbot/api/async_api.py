@@ -13,7 +13,7 @@ import streamlit as st
 from dotenv import load_dotenv
 
 from chatbot._dictionary import session_keys
-from chatbot.config_manager.config import ServiceSettings, load_settings_file
+from chatbot.config_manager import ServiceSettings, load_settings_file
 from chatbot.console.logger import Logger
 from chatbot.tools.audio import file_to_wav, play_opus_file
 

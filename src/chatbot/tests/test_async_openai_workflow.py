@@ -14,7 +14,7 @@ from chatbot.api.async_api import (
     async_write_tts_response,
     get_openai_response_stream,
 )
-from chatbot.config_manager.config import ServiceSettings, load_settings_file
+from chatbot.config_manager import ServiceSettings, load_settings_file
 from chatbot.console.logger import Badge, Logger, set_logger_debug
 from chatbot.tools.live2d_mouth import cal_mouth_y
 from chatbot.tools.timed_helper import get_time_tag_with_millis

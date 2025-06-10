@@ -3,7 +3,7 @@ from __future__ import annotations
 import pvporcupine
 from pvrecorder import PvRecorder
 
-from chatbot.config_manager.config import ServiceSettings, load_settings_file
+from chatbot.config_manager import ServiceSettings, load_settings_file
 
 
 def main():
