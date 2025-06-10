@@ -7,6 +7,9 @@ test-workflow:
 test-vad:
   uv run src/chatbot/tests/test_async_vad.py
 
+server:
+  uv run uvicorn src.chatbot.live2d:app --reload --host 0.0.0.0 --port 7900
+
 recorder:
   uv run src/chatbot/recorder.py
 

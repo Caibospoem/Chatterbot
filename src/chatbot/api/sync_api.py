@@ -25,7 +25,7 @@ settings = load_settings_file("config.toml", ServiceSettings)
 OPENAI_API_KEY = settings.sdk_key
 OPENAI_ENDPOINT = f"{settings.sdk_base_url}/v1/chat/completions"  # Use Chat Completions endpoint
 MODEL = "yi-lightning"
-SYSTEMPROMOT = Path("./promots/paimeng.txt").read_text(encoding="utf-8").strip()  # 派蒙的promot
+SYSTEMPROMOT = Path("./prompts/paimeng.txt").read_text(encoding="utf-8").strip()  # 派蒙的promot
 
 
 def get_openai_response(
