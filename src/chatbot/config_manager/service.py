@@ -4,7 +4,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field
 
-from chatbot.config_manager import load_settings_file, search_for_settings_file
+from chatbot.config_manager.config import load_settings_file, search_for_settings_file
 
 SystemPlatform = Literal["win", "linux", "mac", "raspberry-pi"]
 

@@ -11,7 +11,8 @@ from typing import TYPE_CHECKING, Any, overload
 import tomli_w as tomlw  # 安装 tomli_w 用于写入
 
 if TYPE_CHECKING:
-    from chatbot.config_manager import RootAbsDir, ServiceSettings
+    from chatbot.config_manager.abs_root import RootAbsDir
+    from chatbot.config_manager.service import ServiceSettings
 
 toml_loads = tomllib.loads
 toml_dumps = tomlw.dumps  # 使用 tomlw.dumps
