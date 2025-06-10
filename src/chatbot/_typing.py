@@ -14,6 +14,19 @@ class StSessionSateKeys(TypedDict):
     sentence_que: str  # 动态队列，用于存储句子
     tts_que: str  # 动态队列，用于存储 TTS 音频文件路径
 
+    # 配置文件
+    initial_settings: str  # 初始设置，用于存储全局配置
+    sdk_base_url: str  # SDK 基础 URL
+    sdk_key: str  # SDK 密钥
+    vits_split_url: str  # VITS 切分 URL
+    vits_direct_url: str  # VITS 直接生成 URL
+    asr_url: str  # ASR URL
+    vad_url: str  # VAD URL
+    cache_dir: str  # 缓存目录
+    access_key: str  # Picovoice porcupine 的访问密钥
+    system_platform: str  # 系统平台
+    promopt: str  # 提示文件路径
+
 
 class VadResponse(TypedDict):
     """

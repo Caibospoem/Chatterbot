@@ -192,7 +192,7 @@ wheels = [
 ]
 
 [[package]]
-name = "chatbot"
+name = "chatterbot"
 version = "0.0.1"
 source = { editable = "." }
 dependencies = [

@@ -6,24 +6,15 @@ import platform
 # if sys.version_info >= (3, 11):
 import tomllib  # Python 3.11+ 自带
 from pathlib import Path
-from typing import Annotated, Any
+from typing import TYPE_CHECKING, Any, overload
 
 import tomli_w as tomlw  # 安装 tomli_w 用于写入
-from pydantic import BaseModel, Field
+
+if TYPE_CHECKING:
+    from chatbot.config_manager import RootAbsDir, ServiceSettings
 
 toml_loads = tomllib.loads
 toml_dumps = tomlw.dumps  # 使用 tomlw.dumps
-
-
-class ServiceSettings(BaseModel):
-    sdk_base_url: Annotated[str, Field("sdk_base_url", title="SDK Base URL")]
-    sdk_key: Annotated[str, Field("sdk_key", title="SDK KEY")]
-    vits_split_url: Annotated[str, Field("http://localhost:7900/tts/split", title="VITS Split URL")]  # 切分生成
-    vits_direct_url: Annotated[str, Field("http://localhost:7900/tts/direct", title="VITS URL")]  # 直接生成
-    asr_url: Annotated[str, Field("http://localhost:8000/rec-audio", title="ASR URL")]
-    vad_url: Annotated[str, Field("http://localhost:8000/vad-audio", title="ASR URL")]
-    cache_dir: Annotated[str, Field("cache", title="Cache Directory")]
-    access_key: Annotated[str, Field("access_key", title="Access Key for Picovoice porcupine")]
 
 
 def xdg_config_home() -> Path:
@@ -45,10 +36,24 @@ def search_for_settings_file(setting_name: str) -> Path | None:
     return settings_file
 
 
+@overload
 def load_settings_file(
     setting_name: str,
-    setting: (type[ServiceSettings]),
-) -> ServiceSettings:
+    setting: type[ServiceSettings],
+) -> ServiceSettings: ...
+
+
+@overload
+def load_settings_file(
+    setting_name: str,
+    setting: type[RootAbsDir],
+) -> RootAbsDir: ...
+
+
+def load_settings_file(
+    setting_name: str,
+    setting: (type[ServiceSettings | RootAbsDir]),
+) -> ServiceSettings | RootAbsDir:
     """加载配置文件，如果不存在则创建默认配置文件在当前工作目录。"""
     settings_file = search_for_settings_file(setting_name=setting_name)
     if settings_file is None:
@@ -67,7 +72,7 @@ def load_settings_file(
 
 def write_settings_file(
     settings_name: str,
-    settings: ServiceSettings,
+    settings: ServiceSettings | RootAbsDir,
 ) -> None:
     """将 Setting 对象写入 TOML 文件。"""
     settings_file = search_for_settings_file(setting_name=settings_name)

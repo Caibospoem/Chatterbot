@@ -1,3 +1,6 @@
+start:
+  uv run streamlit run src/chatbot/webui.py
+
 test-openai:
   uv run src/chatbot/tests/test_async_openai.py
 

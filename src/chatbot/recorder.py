@@ -107,11 +107,25 @@ class VoiceRecorder:
         self.porcupine = None
         self.wakeup_recorder = None
         self.access_key = self.settings.access_key
-        self.keyword_paths = [
-            "./models/keywords_spotting/派蒙派蒙_zh_linux_v3_0_0.ppn",
-            "./models/keywords_spotting/你好_linux.ppn",
-        ]
-        self.keywords = ["派蒙派蒙", "你好"]
+
+        # TODO , 封装， 更加通用， 包括唤醒词文件自动查找和验证文件路径
+        self.system_platform = self.settings.system_platform
+        if self.system_platform == "win":
+            self.keyword_paths = [
+                "./models/keywords_spotting/你好_windows.ppn",
+            ]
+        elif self.system_platform == "mac":
+            self.keyword_paths = [
+                "./models/keywords_spotting/你好_mac.ppn",
+            ]
+        elif self.system_platform == "raspberry-pi":
+            self.keyword_paths = [
+                "./models/keywords_spotting/你好_raspberry-pi.ppn",
+            ]
+        else:
+            Logger.error(f"Unsupported system platform: {self.system_platform}")
+            raise ValueError(f"Unsupported system platform: {self.system_platform}")
+        self.keywords = ["你好"]
 
     async def cleanup_wakeup_resources(self):
         """清理唤醒词检测资源"""

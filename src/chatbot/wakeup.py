@@ -9,8 +9,17 @@ from chatbot.config_manager.config import ServiceSettings, load_settings_file
 def main():
     settings = load_settings_file("config.toml", ServiceSettings)
     access_key = settings.access_key
-    keyword_paths = ["./models/keywords_spotting/派蒙派蒙_zh_linux_v3_0_0.ppn"]
-    keywords = ["派蒙派蒙"]
+    if settings.system_platform == "linux":
+        keyword_paths = ["./models/keywords_spotting/你好_linux.ppn"]
+    elif settings.system_platform == "mac":
+        keyword_paths = ["./models/keywords_spotting/你好_mac.ppn"]
+    elif settings.system_platform == "raspberry-pi":
+        keyword_paths = ["./models/keywords_spotting/你好_raspberry-pi.ppn"]
+    elif settings.system_platform == "win":
+        keyword_paths = ["./models/keywords_spotting/你好_windows.ppn"]
+    else:
+        raise ValueError(f"Unsupported system platform: {settings.system_platform}")
+    keywords = ["你好"]
 
     porcupine = pvporcupine.create(  # type: ignore
         access_key=access_key,
