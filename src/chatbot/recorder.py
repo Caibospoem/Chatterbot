@@ -178,11 +178,14 @@ class VoiceRecorder:
         self.wakeup_recorder.stop()
         return True
 
-    def audio_callback(self, indata: NDArray[np.float32], status: sd.CallbackFlags):
+    def audio_callback(
+        self, indata: NDArray[np.float32], _frames: int, _time: dict[str, float], status: sd.CallbackFlags
+    ) -> None:  # type: ignore
         """声音设备的回调函数
-
         Args:
             indata: 输入音频数据数组
+            _frames: 帧数 (未使用)
+            _time: 时间信息字典 (未使用)，包含输入和输出的时间戳
             status: 回调状态标志
         """
         if status:
