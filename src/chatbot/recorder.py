@@ -122,6 +122,10 @@ class VoiceRecorder:
             self.keyword_paths = [
                 "./models/keywords_spotting/你好_raspberry-pi.ppn",
             ]
+        elif self.system_platform == "linux":
+            self.keyword_paths = [
+                "./models/keywords_spotting/你好_linux.ppn",
+            ]
         else:
             Logger.error(f"Unsupported system platform: {self.system_platform}")
             raise ValueError(f"Unsupported system platform: {self.system_platform}")
