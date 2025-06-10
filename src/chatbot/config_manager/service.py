@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from typing import Annotated, Literal
+from typing import Annotated
 
 from pydantic import BaseModel, Field
 
+from chatbot.config_manager._typing import SystemPlatform
 from chatbot.config_manager.config import load_settings_file, search_for_settings_file
-
-SystemPlatform = Literal["win", "linux", "mac", "raspberry-pi"]
 
 
 class ServiceSettings(BaseModel):

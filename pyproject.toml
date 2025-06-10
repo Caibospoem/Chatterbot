@@ -1,6 +1,6 @@
 [project]
 name = "Chatterbot"
-version = "0.0.1"
+version = "0.0.2"
 description = ""
 readme = "README.md"
 requires-python = ">=3.11,<3.12"
@@ -32,11 +32,11 @@ authors = [{ name = "MrXnneHang", email = "XnneHang@gmail.com" }]
 [project.scripts]
 test-openai = "chatbot.tests.test_openai:main"
 test-workflow = "chatbot.tests.test_openai_workflow:main" 
-test_spotter = "chatbot.tests.test_spotter_keyword:main"
+test-spotter = "chatbot.tests.test_spotter_keyword:main"
+test-gpio = "chatbot.tests.test_gpio:main"
+test-wakeup = "chatbot.tests.test_porcupine_kws:main"
+play-audio = "chatbot.tests.test_play_audio:main"
 models = "chatbot.list_model_name:main"
-gpio = "chatbot.tests.test_gpio:main"
-play_audio = "chatbot.tests.test_play_audio:main"
-wakeup = "chatbot.wakeup:main"
 
 [dependency-groups]
 dev = [

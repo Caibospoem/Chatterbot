@@ -3,23 +3,16 @@ from __future__ import annotations
 import pvporcupine
 from pvrecorder import PvRecorder
 
+from chatbot.chatter.util import handle_porcupine_keyword
 from chatbot.config_manager import ServiceSettings, load_settings_file
 
 
 def main():
     settings = load_settings_file("config.toml", ServiceSettings)
     access_key = settings.access_key
-    if settings.system_platform == "linux":
-        keyword_paths = ["./models/keywords_spotting/你好_linux.ppn"]
-    elif settings.system_platform == "mac":
-        keyword_paths = ["./models/keywords_spotting/你好_mac.ppn"]
-    elif settings.system_platform == "raspberry-pi":
-        keyword_paths = ["./models/keywords_spotting/你好_raspberry-pi.ppn"]
-    elif settings.system_platform == "win":
-        keyword_paths = ["./models/keywords_spotting/你好_windows.ppn"]
-    else:
-        raise ValueError(f"Unsupported system platform: {settings.system_platform}")
-    keywords = ["你好"]
+    keyword_config = handle_porcupine_keyword(settings.system_platform)
+    keyword_paths = keyword_config["keyword_paths"]
+    keywords = keyword_config["keywords"]
 
     porcupine = pvporcupine.create(  # type: ignore
         access_key=access_key,

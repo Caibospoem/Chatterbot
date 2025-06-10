@@ -1,5 +1,11 @@
-start:
+setting:
   uv run streamlit run src/chatbot/webui.py
+
+server:
+  uv run uvicorn src.chatbot.live2d:app --reload --host 0.0.0.0 --port 7900
+
+start:
+  uv run src/chatbot/__main__.py
 
 test-openai:
   uv run src/chatbot/tests/test_async_openai.py
@@ -9,12 +15,6 @@ test-workflow:
 
 test-vad:
   uv run src/chatbot/tests/test_async_vad.py
-
-server:
-  uv run uvicorn src.chatbot.live2d:app --reload --host 0.0.0.0 --port 7900
-
-recorder:
-  uv run src/chatbot/recorder.py
 
 fmt: # 似乎不会检查被 .gitignore 忽略的文件
   uv run ruff check --fix --select I . --exclude packages
