@@ -61,6 +61,8 @@ asr_url = "http://localhost:8000/rec-audio"
 vad_url = "http://localhost:8000/vad-audio"
 cache_dir = "cache"
 access_key = "access_key"
+system_platform = "raspberry-pi"
+promopt = "./prompts/paimeng.txt"
 ```
 
 `vits_url` 可以部署 [Bert-VITS2.3-Inference](https://github.com/MrXnneHang/Bert-VITS2.3-Inference) , 然后运行 `just server`.
@@ -82,12 +84,16 @@ access_key = "access_key"
 ## RoadMap
 
 - [ ] 支持对话的上下文
-- [ ] 支持自动识别录音开始和结束.(参考 Digtal_Life_Server)
+- [x] 支持自动识别录音开始和结束.(参考 Digtal_Life_Server)
 - [x] 支持流式切分长段落并且为句子.
+- [ ] 回答完成后可以保持激活一段时间
+- [ ] 把 vad 片段拉长到 3s，避免空 vad
+- [x] 双重唤醒词(support raspberry-pi ` 你好``派蒙 `. 其余都是 `你好`)
+- [ ] 可以用唤醒词中断对话但是对话连续且存在记忆。
 - [ ] 以段落为单位进行 mcp 情绪识别, 并且播放对应的 live2d 动画.
 - [ ] 发送 tts 前检查过短句子, 检查特殊符号 `العبارة`
 - [x] 以句子为单位发送 tts 请求, 并且依次播放音频.
-- [ ] 接入 live2d 模型动画播放
+- [x] 接入 live2d 模型动画播放
 - [ ] 接入 mcp 情绪识别或者 BERT 情绪识别以及情绪动画播放
 - [ ] 接入网页端的对话框显示和支持
 - [ ] 优化 api-key 的调用, 用 streamlit 写一个配置文件的界面.
