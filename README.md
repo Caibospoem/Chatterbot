@@ -120,3 +120,5 @@ promopt = "./prompts/paimeng.txt"
 [**yutto-dev/yutto** 🧊 一个可爱且任性的 B 站视频下载器 打算借鉴 fastmcp 并且以此判别情绪和播放 live2d 动画](https://github.com/yutto-dev/yutto)
 
 [**Arkueid/live2d-py** 直接使用 pygame 播放, 不兼容 linux, 但 live2d 动画播放和情绪识别值得借鉴. ](https://github.com/Arkueid/live2d-py)
+
+k
