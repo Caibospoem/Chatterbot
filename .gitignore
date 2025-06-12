@@ -16,7 +16,6 @@ output.txt
 *.mp4
 output/
 
-config/global.toml
 
 
 # converter

@@ -83,7 +83,7 @@ promopt = "./prompts/paimeng.txt"
 
 ## RoadMap
 
-- [ ] 支持对话的上下文
+- [x] 支持对话的上下文
 - [x] 支持自动识别录音开始和结束.(参考 Digtal_Life_Server)
 - [x] 支持流式切分长段落并且为句子.
 - [ ] 回答完成后可以保持激活一段时间
@@ -96,7 +96,7 @@ promopt = "./prompts/paimeng.txt"
 - [x] 接入 live2d 模型动画播放
 - [ ] 接入 mcp 情绪识别或者 BERT 情绪识别以及情绪动画播放
 - [ ] 接入网页端的对话框显示和支持
-- [ ] 优化 api-key 的调用, 用 streamlit 写一个配置文件的界面.
+- [x] 优化 api-key 的调用, 用 streamlit 写一个配置文件的界面.
 
 ## 原则
 

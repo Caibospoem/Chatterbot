@@ -26,6 +26,10 @@ load_dotenv()
 if session_keys["text_response"] not in st.session_state:
     st.session_state[session_keys["text_response"]] = ""  # 初始化会话状态
 
+if session_keys["short_term_memory"] not in st.session_state:
+    st.session_state[session_keys["short_term_memory"]] = []  # 初始化短期记忆
+
+
 # --- Configuration ---
 settings = load_settings_file("config.toml", ServiceSettings)
 OPENAI_API_KEY = settings.sdk_key
@@ -38,7 +42,7 @@ async def get_openai_response_stream(
     prompt: str,
     model: str = MODEL,
     max_tokens: int = 15000,
-    temperature: float = 0.9,
+    temperature: float = 0.4,
     n: int = 1,
     stop: list[str] | None = None,
     presence_penalty: float = 0,
@@ -54,12 +58,13 @@ async def get_openai_response_stream(
         "Authorization": f"Bearer {OPENAI_API_KEY}",
         "Content-Type": "application/json",
     }
+    if len(st.session_state[session_keys["short_term_memory"]]) == 0:
+        # 如果短期记忆为空，添加系统提示
+        st.session_state[session_keys["short_term_memory"]].append({"role": "system", "content": SYSTEMPROMOT})
+    st.session_state[session_keys["short_term_memory"]].append({"role": "user", "content": prompt})
     data = {
         "model": model,
-        "messages": [
-            {"role": "system", "content": SYSTEMPROMOT},
-            {"role": "user", "content": prompt},
-        ],
+        "messages": st.session_state[session_keys["short_term_memory"]],
         "max_tokens": max_tokens,
         "temperature": temperature,
         "n": n,
@@ -91,11 +96,12 @@ async def get_openai_response_stream(
                         while True:
                             m = re.search(r"[。！？!?\.]", buffer)
                             if m:
-                                sentence = buffer[: m.end()]
+                                sentence = buffer[: m.end()].strip().replace("\n", "")
                                 # 第一次分句，记录耗时
                                 if first_sentence_time is None:
                                     first_sentence_time = time.monotonic()
                                     Logger.debug(f"首句耗时: {first_sentence_time - t_start:.3f} 秒")
+                                st.session_state[session_keys["text_response"]] += sentence
                                 yield sentence
                                 buffer = buffer[m.end() :]
                             else:
@@ -106,6 +112,10 @@ async def get_openai_response_stream(
     # 可选，总耗时打印
     t_end = time.monotonic()
     Logger.debug(f"openai 总耗时: {t_end - t_start:.3f} 秒")
+    st.session_state[session_keys["short_term_memory"]].append(
+        {"role": "assistant", "content": st.session_state[session_keys["text_response"]]}
+    )
+    Logger.debug(f"短期记忆:{st.session_state[session_keys['short_term_memory']]}")
 
 
 async def async_get_tts_response(text: str):

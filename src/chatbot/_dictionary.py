@@ -6,11 +6,14 @@ if TYPE_CHECKING:
     from chatbot._typing import StSessionSateKeys
 
 session_keys: StSessionSateKeys = {
+    # for values
     "text_response": "text_response",
     "sentences": "sentences",
     "static_que": "static_que",
     "sentence_que": "sentence_que",
     "tts_que": "tts_que",
+    "short_term_memory": "short_term_memory",
+    # for settings.
     "initial_settings": "initial_settings",
     "sdk_base_url": "sdk_base_url",
     "sdk_key": "sdk_key",
