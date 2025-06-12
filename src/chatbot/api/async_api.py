@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 from chatbot._dictionary import session_keys
 from chatbot.config_manager import ServiceSettings, load_settings_file
 from chatbot.console.logger import Logger
-from chatbot.tools.audio import file_to_wav, play_opus_file
+from chatbot.tools.audio import file_to_opus, file_to_wav, play_opus_file
 
 if TYPE_CHECKING:
     from chatbot._typing import VadResponse
@@ -204,3 +204,8 @@ async def async_get_vad_response(audio_path: Path) -> VadResponse:
 async def async_file_to_wav(input_path: Path, output_path: Path):
     loop = asyncio.get_event_loop()
     await loop.run_in_executor(None, file_to_wav, input_path, output_path)
+
+
+async def async_file_to_opus(input_path: Path, output_path: Path):
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, file_to_opus, input_path, output_path)

@@ -1,3 +1,6 @@
+light:
+  sudo /home/pi/.local/share/../bin/uv run src/chatbot/tests/test_light.py
+
 setting:
   uv run streamlit run src/chatbot/webui.py
 

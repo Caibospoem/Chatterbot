@@ -8,7 +8,7 @@ import numpy as np
 import sounddevice as sd
 import soundfile as sf
 
-from chatbot.api.async_api import async_get_asr_response, async_get_vad_response
+from chatbot.api.async_api import async_file_to_opus, async_get_asr_response, async_get_vad_response
 from chatbot.chatter import CHANNELS, INITIAL_WAIT_TIME, MAX_RECORDING_TIME, RATE, SEGMENT_DURATION, SILENCE_THRESHOLD
 from chatbot.console.logger import Logger
 from chatbot.tools.timed_helper import get_time_tag_with_millis
@@ -41,11 +41,29 @@ class VoiceRecorder:
             # 将音频帧添加到临时缓冲区
             self.audio_frames.append(indata.copy())
 
-    async def save_wav(self, audio_data: NDArray[np.float32], file_path: Path) -> Path:
-        """将音频数据保存为WAV文件"""
-        sf.write(file_path, audio_data, RATE, format="WAV", subtype="PCM_16")  # type: ignore[arg-type]
-        Logger.info(f"已保存WAV文件: {file_path}")
-        return file_path
+    async def save_audio(self, audio_data: NDArray[np.float32], file_path: Path) -> Path:
+        """将音频数据保存为Opus文件"""
+        # 先保存为临时WAV文件
+        temp_wav_path = file_path.with_suffix(".wav")
+        sf.write(temp_wav_path, audio_data, RATE, format="WAV", subtype="PCM_16")  # type: ignore
+        Logger.info(f"已保存临时WAV文件: {temp_wav_path}")
+
+        # 转换为Opus
+        opus_path = file_path.with_suffix(".opus")
+        await async_file_to_opus(temp_wav_path, opus_path)
+
+        # 确保文件写入完成
+        await asyncio.sleep(0.1)
+
+        # 验证文件是否存在且有内容
+        if not opus_path.exists() or opus_path.stat().st_size == 0:
+            raise RuntimeError(f"Opus文件创建失败或为空: {opus_path}")
+
+        # 删除临时WAV文件
+        temp_wav_path.unlink()
+
+        Logger.info(f"已保存Opus文件: {opus_path} (大小: {opus_path.stat().st_size} 字节)")
+        return opus_path
 
     async def process_segments(self) -> None:
         """按顺序处理音频片段进行VAD检测"""
@@ -59,9 +77,9 @@ class VoiceRecorder:
                 continue
             # 获取最早的片段进行处理
             segment_data, segment_index = self.segments_to_process.pop(0)
-            segment_path = self.cache_dir / f"segment_{segment_index}_{get_time_tag_with_millis()}.wav"
+            segment_path = self.cache_dir / f"segment_{segment_index}_{get_time_tag_with_millis()}.opus"
             # 保存片段为WAV文件
-            await self.save_wav(segment_data, segment_path)
+            await self.save_audio(segment_data, segment_path)
             # 发送到VAD服务
             vad_result = await async_get_vad_response(segment_path)
             # 清理临时文件
@@ -75,6 +93,8 @@ class VoiceRecorder:
             audio_length_ms = vad_result["audio_length"]
             # 获取时间戳数组
             timestamps = vad_result.get("timestamp", [])
+            if len(timestamps) == 0:
+                timestamps = [[0, 10]]  # 设置一个较小的默认值，避免后续计算出错
             if timestamps and len(timestamps) > 0:
                 # 找到最后一个语音段的结束时间
                 last_voice_activity_ms = timestamps[-1][-1] if timestamps[-1] else 0
@@ -187,14 +207,14 @@ class VoiceRecorder:
             return None
         # 保存完整的WAV文件
         time_tag = get_time_tag_with_millis()
-        full_wav_path = self.cache_dir / f"full_audio_{time_tag}.wav"
-        await self.save_wav(full_audio, full_wav_path)
+        full_audio_path = self.cache_dir / f"full_audio_{time_tag}.opus"
+        await self.save_audio(full_audio, full_audio_path)
         # 发送到ASR服务
-        Logger.info(f"发送完整音频文件到ASR服务: {full_wav_path}")
-        response = await async_get_asr_response(full_wav_path)
+        Logger.info(f"发送完整音频文件到ASR服务: {full_audio_path}")
+        response = await async_get_asr_response(full_audio_path)
         # 清理临时文件
-        if full_wav_path.exists():
-            full_wav_path.unlink()
+        if full_audio_path.exists():
+            full_audio_path.unlink()
         # 处理ASR结果
         if response:
             Logger.info(f"ASR识别结果: {response.strip()}")
