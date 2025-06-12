@@ -1,21 +1,25 @@
+# type: ignore
+from __future__ import annotations
+
 import asyncio
-import time
-import RPi.GPIO as GPIO
 import logging
-from rpi_ws281x import PixelStrip, Color
+import time
+
+import RPi.GPIO as GPIO
+from rpi_ws281x import Color, PixelStrip
 
 # Reduce logging
 logging.basicConfig(level=logging.ERROR)
 
 # LED灯带参数
-LED_COUNT = 255       # LED灯带上的LED数量
-LED_PIN = 18          # GPIO引脚
-pin_to_monitor = 23   # 监控的引脚
+LED_COUNT = 255  # LED灯带上的LED数量
+LED_PIN = 18  # GPIO引脚
+pin_to_monitor = 23  # 监控的引脚
 LED_FREQ_HZ = 800000  # LED信号频率
-LED_DMA = 10          # DMA通道
-LED_BRIGHTNESS = 10   # LED亮度（0-255）
-LED_INVERT = False    # 是否反转信号
-LED_CHANNEL = 0       # 通道
+LED_DMA = 10  # DMA通道
+LED_BRIGHTNESS = 10  # LED亮度（0-255）
+LED_INVERT = False  # 是否反转信号
+LED_CHANNEL = 0  # 通道
 
 # 设置 GPIO 引脚
 GPIO.setmode(GPIO.BCM)
@@ -31,8 +35,9 @@ app_state = {
     "starttime": None,
     "PIN": False,
     "light_state": False,  # False表示降低亮度，True表示提高亮度
-    "led_on": False
+    "led_on": False,
 }
+
 
 async def set_all_pixels(color):
     """设置所有LED为指定颜色"""
@@ -40,7 +45,8 @@ async def set_all_pixels(color):
         strip.setPixelColor(i, color)
     strip.show()
     await asyncio.sleep(0.1)
-    
+
+
 async def set_brightness(value):
     """设置灯带亮度并应用"""
     global current_brightness
@@ -49,6 +55,7 @@ async def set_brightness(value):
     strip.show()
     print(f"Brightness set to: {current_brightness}/255")
     await asyncio.sleep(0.1)
+
 
 async def monitor_io():
     while True:
@@ -64,12 +71,13 @@ async def monitor_io():
                 if app_state["PIN"]:
                     app_state["PIN"] = False
                     print("Button released")
-            
+
             # Add a small sleep to prevent CPU hogging
             await asyncio.sleep(0.1)
         except Exception as e:
             print(f"Error in monitor_io: {e}")
             await asyncio.sleep(0.1)
+
 
 async def light_set():
     while True:
@@ -84,7 +92,7 @@ async def light_set():
                     else:
                         print("light down")
                         await set_brightness(current_brightness - 10)
-                    
+
             else:
                 if app_state["starttime"] is not None:
                     elapsed_time = time.time() - app_state["starttime"]
@@ -98,28 +106,30 @@ async def light_set():
                             print("light off")
                             await set_all_pixels(Color(0, 0, 0))
                     app_state["starttime"] = None
-            
+
             await asyncio.sleep(0.1)
         except Exception as e:
             print(f"Error in light_set: {e}")
             await asyncio.sleep(0.1)
 
+
 async def main():
     print("Starting GPIO monitoring...")
     print(f"Monitoring pin {pin_to_monitor}")
     print("Press Ctrl+C to stop")
-    
+
     try:
         # 创建任务
         task1 = asyncio.create_task(monitor_io())
         task2 = asyncio.create_task(light_set())
-        
+
         # 等待任务完成
         await asyncio.gather(task1, task2)
     except asyncio.CancelledError:
         print("Tasks cancelled")
     except Exception as e:
         print(f"Error in main: {e}")
+
 
 try:
     asyncio.run(main())
