@@ -25,6 +25,7 @@ dependencies = [
     "fastapi>=0.115.12",
     "uvicorn>=0.34.3",
     "soundfile>=0.13.1",
+    "rpi-ws281x>=5.0.0",
 ]
 authors = [{ name = "MrXnneHang", email = "XnneHang@gmail.com" }]
 
