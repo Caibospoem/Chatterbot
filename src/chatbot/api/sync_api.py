@@ -19,6 +19,8 @@ load_dotenv()
 
 if session_keys["text_response"] not in st.session_state:
     st.session_state[session_keys["text_response"]] = ""  # 初始化会话状态
+if session_keys["short_term_memory"] not in st.session_state:
+    st.session_state[session_keys["short_term_memory"]] = []  # 初始化短期记忆
 
 # --- Configuration ---
 settings = load_settings_file("config.toml", ServiceSettings)
@@ -32,7 +34,7 @@ def get_openai_response(
     prompt: str,
     model: str = MODEL,
     max_tokens: int = 15000,
-    temperature: float = 0.9,
+    temperature: float = 0.5,
     n: int = 1,
     stop: list[str] | None = None,
     presence_penalty: float = 0,
@@ -48,6 +50,11 @@ def get_openai_response(
         "Authorization": f"Bearer {OPENAI_API_KEY}",
         "Content-Type": "application/json",
     }
+    if len(st.session_state[session_keys["short_term_memory"]]) == 0:
+        st.session_state[session_keys["short_term_memory"]].append({"role": "system", "content": SYSTEMPROMOT})
+    st.session_state[session_keys["short_term_memory"]].append(
+        {"role": "user", "content": prompt}
+    )  # 添加用户输入到短期记忆中
     data = {
         "model": model,
         "messages": [
@@ -66,6 +73,9 @@ def get_openai_response(
     response.raise_for_status()
     response_json = response.json()
     st.session_state[session_keys["text_response"]] = response_json["choices"][0]["message"]["content"].strip()
+    st.session_state[session_keys["short_term_memory"]].append(
+        {"role": "assistant", "content": st.session_state[session_keys["text_response"]]}
+    )  # 添加助手响应到短期记忆中
     return response_json["choices"][0]["message"]["content"].strip()
 
 

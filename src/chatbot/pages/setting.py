@@ -163,8 +163,8 @@ with BOTSave:
                 settings.cache_dir = cache_dir
                 settings.system_platform = system_platform  # type: ignore
                 settings.promopt = promopt
-                write_settings_file(settings_name="global.toml", settings=settings)
-                message_box("保存成功！", "你也可以通过手动配置 `global.toml` 来修改配置。")
+                write_settings_file(settings_name="config.toml", settings=settings)
+                message_box("保存成功！", "你也可以通过手动配置 `config.toml` 来修改配置。")
                 st.session_state[session_keys["initial_settings"]] = (
                     current_settings  # Update initial settings after save
                 )
@@ -172,7 +172,7 @@ with BOTSave:
                 message_box("未检测到更改", "配置未发生任何变化，无需保存。")
 
         if st.button("**恢复默认设置**", type="secondary", use_container_width=True):
-            settings = Path("config") / "global.toml"
+            settings = Path("config") / "config.toml"
             settings.unlink()
             load_settings_file("config.toml", ServiceSettings)
             message_box("恢复成功！", "配置已恢复为默认设置。刷新页面即可查看更改。")

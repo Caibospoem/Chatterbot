@@ -13,6 +13,7 @@ class StSessionSateKeys(TypedDict):
     static_que: str  # 静态队列，用于存储音频文件路径, 为了保持逻辑一致性设置
     sentence_que: str  # 动态队列，用于存储句子
     tts_que: str  # 动态队列，用于存储 TTS 音频文件路径
+    short_term_memory: str  # 记录单次问答的所有内容， 以 role: user , rool: asistant 进行记录。 list[dict[str,str]]
 
     # 配置文件
     initial_settings: str  # 初始设置，用于存储全局配置
