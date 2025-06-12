@@ -44,7 +44,7 @@ async def set_all_pixels(color):
 async def set_brightness(value):
     """设置灯带亮度并应用"""
     global current_brightness
-    current_brightness = max(1, min(255, value))  # 确保亮度在0-255之间
+    current_brightness = max(10, min(255, value))  # 确保亮度在10-255之间
     strip.setBrightness(current_brightness)
     strip.show()
     print(f"Brightness set to: {current_brightness}/255")
