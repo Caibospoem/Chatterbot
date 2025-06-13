@@ -1,3 +1,4 @@
+# type: ignore
 from __future__ import annotations
 
 import asyncio
@@ -220,4 +221,196 @@ class VoiceRecorder:
             Logger.info(f"ASR识别结果: {response.strip()}")
             return response.strip()
         Logger.warning("ASR识别返回空结果")
+        return None
+
+    # 在 VoiceRecorder 类中添加这个方法
+
+    async def record_with_voice_trigger(self) -> None | str:
+        """在检测到语音活动后开始录音"""
+        Logger.info("检测到语音活动，开始录音...")
+
+        # 重置录音状态
+        self.recording = True
+        self.audio_frames = []
+        self.all_audio_frames = []
+        self.segments_to_process = []
+        self.audio_length = 0
+
+        # 计算每个片段的样本数
+        samples_per_segment = int(RATE * SEGMENT_DURATION)
+
+        # 启动录音流
+        stream = sd.InputStream(samplerate=RATE, channels=CHANNELS, callback=self.audio_callback)
+        start_time = time.time()
+        stream.start()
+
+        # 立即开始VAD处理（不需要初始等待时间）
+        segment_processor = asyncio.create_task(self.process_segments())
+        segment_index = 0
+        segment_buffer: list[NDArray[np.float32]] = []
+
+        # 录音主循环
+        while self.recording:
+            current_time = time.time()
+            self.audio_length = current_time - start_time
+
+            # 检查最大录音时间
+            if self.audio_length > MAX_RECORDING_TIME:
+                Logger.info(f"达到最大录音时间 ({MAX_RECORDING_TIME}s)，停止录音")
+                self.recording = False
+                break
+
+            # 收集当前帧
+            current_frames = []
+            if self.audio_frames:
+                current_frames = self.audio_frames.copy()
+                self.audio_frames = []
+                self.all_audio_frames.extend(current_frames)
+                segment_buffer.extend(current_frames)
+
+            # 处理音频片段
+            total_samples = sum(len(frame) for frame in segment_buffer)
+            if total_samples >= samples_per_segment:
+                frames_for_segment: list[NDArray[np.float32]] = []
+                segment_samples = 0
+
+                for i, frame in enumerate(segment_buffer):
+                    frames_for_segment.append(frame)
+                    segment_samples += len(frame)
+                    if segment_samples >= samples_per_segment:
+                        segment_buffer = segment_buffer[i + 1 :]
+                        break
+
+                if frames_for_segment:
+                    segment_data = np.concatenate(frames_for_segment, axis=0)
+                    self.segments_to_process.append((segment_data, segment_index))
+                    Logger.info(f"添加片段 {segment_index} 到处理队列")
+                    segment_index += 1
+
+            await asyncio.sleep(0.1)
+
+        # 停止录音
+        Logger.info("停止录音...")
+        stream.stop()
+        stream.close()
+
+        # 等待片段处理完成
+        self.processing_segments = False
+        await segment_processor
+
+        # 处理完整音频
+        if self.all_audio_frames and len(self.all_audio_frames) > 0:
+            if self.audio_frames:
+                self.all_audio_frames.extend(self.audio_frames)
+
+            full_audio = np.concatenate(self.all_audio_frames, axis=0)
+            full_duration = len(full_audio) / RATE
+            Logger.info(f"完整录音时长: {full_duration:.2f} 秒")
+            return await self.save_and_process_full_audio(full_audio)
+
+        Logger.warning("没有收集到音频数据")
+        return None
+
+    # 在 VoiceRecorder 类中添加这个方法
+
+    async def record_with_pre_collected_audio(self, pre_collected_audio: NDArray[np.float32]) -> None | str:
+        """使用预收集的音频开始录音"""
+        pre_duration = len(pre_collected_audio) / RATE
+        Logger.info(f"开始录音，包含预收集音频 {pre_duration:.2f} 秒")
+
+        # 重置录音状态
+        self.recording = True
+        self.audio_frames = []
+        self.all_audio_frames = []
+        self.segments_to_process = []
+        self.audio_length = 0
+
+        # 将预收集的音频添加到总音频中
+        # 需要将预收集的音频分割成帧格式
+        frame_size = 1024  # 假设的帧大小，可以根据实际情况调整
+        pre_frames = []
+        for i in range(0, len(pre_collected_audio), frame_size):
+            end_idx = min(i + frame_size, len(pre_collected_audio))
+            frame = pre_collected_audio[i:end_idx].reshape(-1, 1)  # 确保是正确的形状
+            pre_frames.append(frame)
+
+        self.all_audio_frames.extend(pre_frames)
+        Logger.info(f"已添加预收集音频帧数: {len(pre_frames)}")
+
+        # 计算每个片段的样本数
+        samples_per_segment = int(RATE * SEGMENT_DURATION)
+
+        # 启动录音流
+        stream = sd.InputStream(samplerate=RATE, channels=CHANNELS, callback=self.audio_callback)
+        start_time = time.time()
+        stream.start()
+
+        # 立即开始VAD处理
+        segment_processor = asyncio.create_task(self.process_segments())
+        segment_index = 0
+        segment_buffer: list[NDArray[np.float32]] = []
+
+        # 将预收集的音频也加入到分段处理中
+        segment_buffer.extend(pre_frames)
+
+        # 录音主循环
+        while self.recording:
+            current_time = time.time()
+            self.audio_length = current_time - start_time + pre_duration  # 包含预收集音频的时长
+
+            # 检查最大录音时间
+            if self.audio_length > MAX_RECORDING_TIME:
+                Logger.info(f"达到最大录音时间 ({MAX_RECORDING_TIME}s)，停止录音")
+                self.recording = False
+                break
+
+            # 收集当前帧
+            current_frames = []
+            if self.audio_frames:
+                current_frames = self.audio_frames.copy()
+                self.audio_frames = []
+                self.all_audio_frames.extend(current_frames)
+                segment_buffer.extend(current_frames)
+
+            # 处理音频片段
+            total_samples = sum(len(frame) for frame in segment_buffer)
+            if total_samples >= samples_per_segment:
+                frames_for_segment: list[NDArray[np.float32]] = []
+                segment_samples = 0
+
+                for i, frame in enumerate(segment_buffer):
+                    frames_for_segment.append(frame)
+                    segment_samples += len(frame)
+                    if segment_samples >= samples_per_segment:
+                        segment_buffer = segment_buffer[i + 1 :]
+                        break
+
+                if frames_for_segment:
+                    segment_data = np.concatenate(frames_for_segment, axis=0)
+                    self.segments_to_process.append((segment_data, segment_index))
+                    Logger.info(f"添加片段 {segment_index} 到处理队列")
+                    segment_index += 1
+
+            await asyncio.sleep(0.1)
+
+        # 停止录音
+        Logger.info("停止录音...")
+        stream.stop()
+        stream.close()
+
+        # 等待片段处理完成
+        self.processing_segments = False
+        await segment_processor
+
+        # 处理完整音频
+        if self.all_audio_frames and len(self.all_audio_frames) > 0:
+            if self.audio_frames:
+                self.all_audio_frames.extend(self.audio_frames)
+
+            full_audio = np.concatenate(self.all_audio_frames, axis=0)
+            full_duration = len(full_audio) / RATE
+            Logger.info(f"完整录音时长（含预收集）: {full_duration:.2f} 秒")
+            return await self.save_and_process_full_audio(full_audio)
+
+        Logger.warning("没有收集到音频数据")
         return None

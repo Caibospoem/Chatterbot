@@ -11,7 +11,11 @@ def handle_porcupine_keyword(system_platform: SystemPlatform):
     key_words = ["你好"]
     """获取 Porcupine 关键词和关键词特征文件路径"""
     if system_platform == "linux":
-        keyword_paths = ["./models/keywords_spotting/你好_linux.ppn"]
+        keyword_paths = [
+            "./models/keywords_spotting/你好_linux.ppn",
+            "./models/keywords_spotting/派蒙_zh_linux_v3_0_0.ppn",
+        ]
+        key_words.extend(["派蒙"])
     elif system_platform == "mac":
         keyword_paths = ["./models/keywords_spotting/你好_mac.ppn"]
     elif system_platform == "raspberry-pi":

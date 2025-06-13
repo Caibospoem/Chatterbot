@@ -1,3 +1,5 @@
+# type: ignore
+
 from __future__ import annotations
 
 import asyncio
@@ -14,7 +16,7 @@ from dotenv import load_dotenv
 
 from chatbot._dictionary import session_keys
 from chatbot.config_manager import ServiceSettings, load_settings_file
-from chatbot.console.logger import Logger
+from chatbot.console.logger import Badge, Logger
 from chatbot.tools.audio import file_to_opus, file_to_wav, play_opus_file
 
 if TYPE_CHECKING:
@@ -47,75 +49,245 @@ async def get_openai_response_stream(
     stop: list[str] | None = None,
     presence_penalty: float = 0,
     frequency_penalty: float = 0,
+    max_retries: int = 3,
+    first_sentence_timeout: float = 3.5,
+    request_timeout: float = 30.0,
 ):
     """
     获取OpenAI API的响应（流式，异步）
+    修复重试时用户消息丢失的问题
     """
     settings: ServiceSettings = load_settings_file("config.toml", ServiceSettings)
     OPENAI_API_KEY: str = settings.sdk_key
     OPENAI_ENDPOINT: str = settings.sdk_base_url + "/v1/chat/completions"
+
     headers = {
         "Authorization": f"Bearer {OPENAI_API_KEY}",
         "Content-Type": "application/json",
     }
+
     if len(st.session_state[session_keys["short_term_memory"]]) == 0:
-        # 如果短期记忆为空，添加系统提示
         st.session_state[session_keys["short_term_memory"]].append({"role": "system", "content": SYSTEMPROMOT})
-    st.session_state[session_keys["short_term_memory"]].append({"role": "user", "content": prompt})
-    data = {
-        "model": model,
-        "messages": st.session_state[session_keys["short_term_memory"]],
-        "max_tokens": max_tokens,
-        "temperature": temperature,
-        "n": n,
-        "stop": stop,
-        "presence_penalty": presence_penalty,
-        "frequency_penalty": frequency_penalty,
-        "stream": True,
-    }
-    buffer = ""
-    t_start = time.monotonic()  # 发起请求前的时间
-    first_sentence_time = None
 
-    async with aiohttp.ClientSession() as session:
-        async with session.post(OPENAI_ENDPOINT, headers=headers, json=data) as resp:
-            async for line in resp.content:
-                decoded = line.decode("utf-8").strip()
-                if not decoded or not decoded.startswith("data: "):
-                    continue
-                data_str = decoded[6:]
-                if data_str.strip() == "[DONE]":
-                    if buffer:
-                        yield buffer
-                    break
-                try:
-                    chunk = json.loads(data_str)
-                    if "choices" in chunk and chunk["choices"]:
-                        content = chunk["choices"][0]["delta"].get("content", "")
-                        buffer += content
-                        while True:
-                            m = re.search(r"[。！？!?\.]", buffer)
-                            if m:
-                                sentence = buffer[: m.end()].strip().replace("\n", "")
-                                # 第一次分句，记录耗时
-                                if first_sentence_time is None:
-                                    first_sentence_time = time.monotonic()
-                                    Logger.debug(f"首句耗时: {first_sentence_time - t_start:.3f} 秒")
-                                st.session_state[session_keys["text_response"]] += sentence
-                                yield sentence
-                                buffer = buffer[m.end() :]
-                            else:
+    # 保存原始的用户消息，用于重试
+    user_message = {"role": "user", "content": prompt}
+
+    # 重试循环
+    for attempt in range(max_retries):
+        Logger.custom(
+            f"发送OpenAI请求 (第 {attempt + 1}/{max_retries} 次)", badge=Badge("连接", fore="black", back="cyan")
+        )
+
+        try:
+            # 重置响应文本
+            st.session_state[session_keys["text_response"]] = ""
+            first_sentence_received = False
+
+            # 确保用户消息在短期记忆中（每次重试都重新添加）
+            # 先检查最后一条是否是相同的用户消息，如果不是则添加
+            if (
+                not st.session_state[session_keys["short_term_memory"]]
+                or st.session_state[session_keys["short_term_memory"]][-1] != user_message
+            ):
+                st.session_state[session_keys["short_term_memory"]].append(user_message)
+
+            # 准备请求数据
+            data = {
+                "model": model,
+                "messages": st.session_state[session_keys["short_term_memory"]],
+                "max_tokens": max_tokens,
+                "temperature": temperature,
+                "n": n,
+                "stop": stop,
+                "presence_penalty": presence_penalty,
+                "frequency_penalty": frequency_penalty,
+                "stream": True,
+            }
+
+            # 添加调试日志，显示发送的消息
+            Logger.info(f"发送的消息: {data['messages']}")
+
+            # 使用统一的超时时间控制整个首句获取过程
+            async def get_first_sentence_with_timeout(data):
+                nonlocal first_sentence_received
+
+                buffer = ""
+                t_start = time.monotonic()
+                first_sentence_time = None
+
+                # 设置超时
+                timeout = aiohttp.ClientTimeout(
+                    total=request_timeout, connect=first_sentence_timeout - 0.5, sock_read=request_timeout
+                )
+
+                async with aiohttp.ClientSession(timeout=timeout) as session:
+                    Logger.debug("正在建立连接...")
+
+                    async with session.post(OPENAI_ENDPOINT, headers=headers, json=data) as resp:
+                        Logger.debug(f"连接已建立，状态码: {resp.status}")
+
+                        if resp.status != 200:
+                            error_text = await resp.text()
+                            raise Exception(f"HTTP {resp.status}: {error_text}")
+
+                        Logger.debug("开始接收响应流...")
+
+                        async for line in resp.content:
+                            decoded = line.decode("utf-8").strip()
+                            if not decoded or not decoded.startswith("data: "):
+                                continue
+
+                            data_str = decoded[6:]
+                            if data_str.strip() == "[DONE]":
+                                if buffer.strip() and not first_sentence_received:
+                                    Logger.debug(f"流结束，返回剩余内容: {repr(buffer)}")
+                                    return buffer.strip(), buffer, resp
                                 break
-                except Exception as e:
-                    Logger.error(f"{e}")
 
-    # 可选，总耗时打印
-    t_end = time.monotonic()
-    Logger.debug(f"openai 总耗时: {t_end - t_start:.3f} 秒")
+                            try:
+                                chunk = json.loads(data_str)
+                                if "choices" in chunk and chunk["choices"]:
+                                    content = chunk["choices"][0]["delta"].get("content", "")
+                                    if content:
+                                        Logger.debug(f"收到内容块: {repr(content)}")
+                                        buffer += content
+
+                                        # 检查是否形成完整句子
+                                        m = re.search(r"[。！？!?\.]", buffer)
+                                        if m:
+                                            sentence = buffer[: m.end()].strip().replace("\n", "")
+                                            if sentence:
+                                                first_sentence_time = time.monotonic()
+                                                first_sentence_received = True
+                                                Logger.debug(f"首句耗时: {first_sentence_time - t_start:.3f} 秒")
+                                                Logger.debug(f"生成首句: {repr(sentence)}")
+                                                return sentence, buffer[m.end() :], resp
+                            except json.JSONDecodeError as e:
+                                Logger.warning(f"JSON解析错误: {e}")
+                                continue
+                            except Exception as e:
+                                Logger.error(f"解析响应块时出错: {e}")
+                                continue
+
+                        # 如果没有找到完整句子但有内容
+                        if buffer.strip():
+                            Logger.debug(f"未找到完整句子，返回现有内容: {repr(buffer)}")
+                            return buffer.strip(), "", resp
+
+                        return None, "", resp
+
+            # 使用统一的超时时间
+            Logger.debug(f"等待首句响应（总超时时间: {first_sentence_timeout}秒）...")
+
+            try:
+                result = await asyncio.wait_for(get_first_sentence_with_timeout(data), timeout=first_sentence_timeout)
+
+                first_sentence, remaining_buffer, resp = result
+
+                if first_sentence:
+                    Logger.info(f"首句接收成功: {repr(first_sentence)}")
+                    st.session_state[session_keys["text_response"]] += first_sentence
+                    yield first_sentence
+
+                    # 首句成功后，处理剩余内容
+                    Logger.debug("首句成功，继续处理后续内容...")
+
+                    try:
+                        buffer = remaining_buffer
+
+                        # 继续处理剩余的响应流
+                        async for line in resp.content:
+                            decoded = line.decode("utf-8").strip()
+                            if not decoded or not decoded.startswith("data: "):
+                                continue
+
+                            data_str = decoded[6:]
+                            if data_str.strip() == "[DONE]":
+                                if buffer.strip():
+                                    Logger.debug(f"处理剩余内容: {repr(buffer)}")
+                                    st.session_state[session_keys["text_response"]] += buffer.strip()
+                                    yield buffer.strip()
+                                break
+
+                            try:
+                                chunk = json.loads(data_str)
+                                if "choices" in chunk and chunk["choices"]:
+                                    content = chunk["choices"][0]["delta"].get("content", "")
+                                    if content:
+                                        buffer += content
+
+                                        # 检查是否形成完整句子
+                                        while True:
+                                            m = re.search(r"[。！？!?\.]", buffer)
+                                            if m:
+                                                sentence = buffer[: m.end()].strip().replace("\n", "")
+                                                if sentence:
+                                                    st.session_state[session_keys["text_response"]] += sentence
+                                                    Logger.debug(f"后续句子: {repr(sentence)}")
+                                                    yield sentence
+                                                    buffer = buffer[m.end() :]
+                                            else:
+                                                break
+                            except json.JSONDecodeError as e:
+                                Logger.warning(f"JSON解析错误: {e}")
+                                continue
+                            except Exception as e:
+                                Logger.error(f"解析后续响应时出错: {e}")
+                                continue
+
+                    except Exception as e:
+                        Logger.warning(f"处理后续内容时出错: {e}")
+
+                    # 成功完成
+                    t_end = time.monotonic()
+                    Logger.debug(f"openai 总耗时: {t_end - time.monotonic():.3f} 秒")
+
+                    st.session_state[session_keys["short_term_memory"]].append(
+                        {"role": "assistant", "content": st.session_state[session_keys["text_response"]]}
+                    )
+                    Logger.debug(f"短期记忆:{st.session_state[session_keys['short_term_memory']]}")
+
+                    Logger.info("OpenAI请求成功完成")
+                    return
+
+                else:
+                    Logger.warning("未收到有效的首句内容")
+
+            except TimeoutError:
+                Logger.warning(f"首句获取总超时（{first_sentence_timeout}秒）")
+
+        except Exception as e:
+            Logger.error(f"第 {attempt + 1} 次请求出现异常: {e}")
+            import traceback
+
+            Logger.debug(f"异常详情: {traceback.format_exc()}")
+
+        # 重试逻辑
+        if not first_sentence_received and attempt < max_retries - 1:
+            # 从短期记忆中移除当前的用户消息，下次循环会重新添加
+            if (
+                st.session_state[session_keys["short_term_memory"]]
+                and st.session_state[session_keys["short_term_memory"]][-1]["role"] == "user"
+            ):
+                st.session_state[session_keys["short_term_memory"]].pop()
+
+            wait_time = 0.5 + attempt * 0.5
+            Logger.info(f"等待 {wait_time} 秒后重试...")
+            await asyncio.sleep(wait_time)
+            continue
+        elif first_sentence_received:
+            Logger.info("首句已成功接收")
+            return
+        else:
+            break
+
+    # 所有重试失败
+    Logger.error("所有重试都失败了，返回默认响应")
+    st.session_state[session_keys["text_response"]] = "抱歉，我现在无法正常回应，请稍后再试。"
     st.session_state[session_keys["short_term_memory"]].append(
         {"role": "assistant", "content": st.session_state[session_keys["text_response"]]}
     )
-    Logger.debug(f"短期记忆:{st.session_state[session_keys['short_term_memory']]}")
+    yield "抱歉，我现在无法正常回应，请稍后再试。"
 
 
 async def async_get_tts_response(text: str):

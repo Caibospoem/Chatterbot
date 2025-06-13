@@ -66,21 +66,38 @@ async def play_worker(cache_dir: Path) -> None:
 
 async def process_voice_command(prompt: str, cache_dir: Path) -> None:
     """处理语音命令的完整流程"""
+    Logger.info(f"开始处理语音命令: {prompt}")  # 添加这行日志
+
     # 确保缓存目录存在
     (cache_dir / "tts").mkdir(parents=True, exist_ok=True)
 
-    # 创建任务
-    producer = asyncio.create_task(sentence_producer(prompt))
-    tts = asyncio.create_task(tts_worker(cache_dir / "tts"))
-    play = asyncio.create_task(play_worker(cache_dir=cache_dir / "tts"))
+    try:
+        # 创建任务
+        producer = asyncio.create_task(sentence_producer(prompt))
+        tts = asyncio.create_task(tts_worker(cache_dir / "tts"))
+        play = asyncio.create_task(play_worker(cache_dir=cache_dir / "tts"))
 
-    # 等待生产者完成
-    await producer
+        Logger.info("已创建处理任务，等待生产者完成...")  # 添加这行日志
 
-    # 等待所有队列处理完毕
-    await st.session_state[session_keys["sentence_que"]].join()
-    await st.session_state[session_keys["tts_que"]].join()
+        # 等待生产者完成
+        await producer
 
-    # 取消剩余任务
-    tts.cancel()
-    play.cancel()
+        Logger.info("生产者完成，等待队列处理...")  # 添加这行日志
+
+        # 等待所有队列处理完毕
+        await st.session_state[session_keys["sentence_que"]].join()
+        await st.session_state[session_keys["tts_que"]].join()
+
+        Logger.info("队列处理完成，取消剩余任务...")  # 添加这行日志
+
+        # 取消剩余任务
+        tts.cancel()
+        play.cancel()
+
+        Logger.info("语音命令处理完成")  # 添加这行日志
+
+    except Exception as e:
+        Logger.error(f"处理语音命令时出错: {e}")
+        import traceback
+
+        Logger.error(f"错误详情: {traceback.format_exc()}")
